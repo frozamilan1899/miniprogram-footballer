@@ -1,0 +1,34 @@
+<!--edit.wxml-->
+
+<view class="container">
+  <view class="page-body">
+    <view class="page-section">
+      <button type="primary" bindtap="submitMatchInfo" hover-class="other-button-hover"> 发布 </button>
+    </view>
+    <view class="page-section">
+      <text>比赛主题</text>
+      <textarea placeholder="请填写比赛主题" data-show="yes" maxlength='-1' show-confirm-bar='true' adjust-position='true' bindinput='getSubjectInput' value="{{matchInfo.subject}}"></textarea>
+    </view>
+    <view class="page-section">
+      <text>比赛时间：{{matchInfo.time}}</text>
+      <picker mode="multiSelector" bindchange="bindStartMultiPickerChange" bindtap='pickerTap' bindcolumnchange="bindMultiPickerColumnChange" value="{{multiIndex}}" range="{{multiArray}}">
+        <button type="primary" hover-class="other-button-hover"> 选择日期和时间 </button>
+      </picker>
+    </view>
+    <view class="page-section">
+      <text>报名列表</text>
+      <textarea placeholder="请填写" data-show="yes" maxlength='-1' show-confirm-bar='true' adjust-position='true' bindinput='getSUInput' value="{{signUpListToString}}"></textarea>
+    </view>
+    <view class="page-section">
+      <text>请假列表</text>
+      <textarea placeholder="请假" data-show="yes" maxlength='-1' show-confirm-bar='true' adjust-position='true' bindinput='getAFLInput' value="{{askForLeaveListToString}}"></textarea>
+    </view>
+    <view class="page-section">
+      <button type="primary" bindtap="toMapsPage" hover-class="other-button-hover"> 选取比赛位置 </button>
+      <text>位置名称：{{matchInfo.location.name}}\n</text>
+      <text>位置地址：{{matchInfo.location.address}}\n</text>
+      <map id="map" longitude="{{matchInfo.location.longitude}}" latitude="{{matchInfo.location.latitude}}" scale="14" markers="{{markers}}"></map>
+      <text>\n</text>
+    </view>
+  </view>
+</view>

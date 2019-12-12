@@ -1,0 +1,51 @@
+/**edit.wxss**/
+
+.page-body {
+  background: #f6f6f6;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.page-section {
+  width: 97%;
+  margin-left: 10rpx;
+  margin-right: 10rpx;
+}
+
+text {
+  align-items: left;
+  justify-content: left;
+  margin-left: 20rpx;
+  font-size: 30rpx;
+  background-color: #f6f6f6;
+}
+
+textarea {
+  font-size: 30rpx;
+  margin: 20rpx;
+  padding: 10rpx;
+  background-color: white;
+  width: 93%;
+  height: 100px;
+  border-radius: 5px;
+  color: #333;
+}
+
+#map {
+  width: 95%; 
+  height: 310px;
+  margin-top: 20rpx;
+  margin-left: 20rpx;
+  border: 1px #333 solid;
+  border-radius: 5px;
+}
+
+button {
+  margin: 10px;
+}
+
+.other-button-hover {
+  background-color: blue;
+}
