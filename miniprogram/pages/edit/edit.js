@@ -15,57 +15,105 @@ Page({
         latitude: 34.26667,
         name: '',
         address: ''
-      }
+      },
+      updateTime: 0,
+      referredOpeneIds: []
     },
     markers: [],
     matchId: "",
-    updateMatchInfo: false,
     pageDate: new Date(),
     signUpListToString: '',
     askForLeaveListToString: '',
+    publishNewMatch: true,
+    publisher: true,
+    publishText: '发布',
+    subjectDisabled: false,
+    timeDisabled: false,
+    locationDisabled: false,
   },
 
   onLoad: function(options) {
     console.log(options);
     if ('id' in options) {
-      this.data.updateMatchInfo = true;
+      wx.showLoading({
+        title: '加载中',
+      });
+      this.data.publishNewMatch = false;
       this.data.matchId = options.id;
       var that = this;
       const db = wx.cloud.database();
       db.collection(app.globalData.dbName).where({
-        _id: options.id,
-        _openid: app.globalData.openid
+        _id: options.id
       }).get({
         success: res => {
-          var match = res.data[0];
-          that.data.matchInfo = match;
-          that.data.signUpListToString = match.signUpList.join('\n');
-          that.data.askForLeaveListToString = match.askForLeaveList.join('\n');
+          wx.hideLoading();
+          that.data.matchInfo = res.data[0];
+          if (that.data.matchInfo._openid != app.globalData.openid) {
+            that.data.publisher = false;
+          }
+          var indexNameList = that.showTextList(that.data.matchInfo.signUpList);
+          that.data.signUpListToString = indexNameList.join(' | ');
+          indexNameList = that.showTextList(that.data.matchInfo.askForLeaveList)
+          that.data.askForLeaveListToString = indexNameList.join(' | ');
           var markers = [{
             iconPath: "../../images/marker_01.png",
             id: 0,
             latitude: that.data.matchInfo.location.latitude,
             longitude: that.data.matchInfo.location.longitude,
-            width: 25,
-            height: 40
+            width: 16.67,
+            height: 26.67
           }];
+          console.log(that.data.matchInfo);
           that.setData({
             matchInfo: that.data.matchInfo,
             markers: markers, 
             signUpListToString: that.data.signUpListToString,
             askForLeaveListToString: that.data.askForLeaveListToString
           })
+        },
+        fail: res => {
+          wx.hideLoading();
+          console.log(res);
         }
       })
     } else {
-      this.data.updateMatchInfo = false;
+      this.data.publishNewMatch = true;
     }
   },
 
-  onShow: function () {
+  onShow: function() {
+    // 渲染页面
+    if (!this.data.publisher) {
+      this.data.publishText = '追加';
+      this.data.subjectDisabled = true;
+      this.data.timeDisabled = true;
+      this.data.locationDisabled = true;
+      this.setData({
+        publishText: this.data.publishText,
+        subjectDisabled: this.data.subjectDisabled,
+        timeDisabled: this.data.timeDisabled,
+        locationDisabled: this.data.locationDisabled,
+      });
+    }
     this.setData({
       matchInfo: this.data.matchInfo
     })
+  },
+
+  onUnload: function() {
+    // 渲染页面
+    if (!this.data.publisher) {
+      this.data.publishText = '发布';
+      this.data.subjectDisabled = false;
+      this.data.timeDisabled = false;
+      this.data.locationDisabled = false;
+      this.setData({
+        publishText: this.data.publishText,
+        subjectDisabled: this.data.subjectDisabled,
+        timeDisabled: this.data.timeDisabled,
+        locationDisabled: this.data.locationDisabled,
+      });
+    }
   },
 
   getSubjectInput: function(event) {
@@ -73,17 +121,13 @@ Page({
   },
 
   getSUInput: function (event) {
-    this.data.signUpListToString = event.detail.value;
-    var wholeText = this.data.signUpListToString;
-    var linesOfText = wholeText.split(/[\n]/);
-    this.data.matchInfo.signUpList = linesOfText;
+    var inputStr = event.detail.value;
+    this.data.matchInfo.signUpList.push(inputStr);
   }, 
 
   getAFLInput: function(event) {
-    this.data.askForLeaveListToString = event.detail.value;
-    var wholeText = this.data.askForLeaveListToString;
-    var linesOfText = wholeText.split(/[\n]/);
-    this.data.matchInfo.askForLeaveList = linesOfText;
+    var inputStr = event.detail.value;
+    this.data.matchInfo.askForLeaveList.push(inputStr);
   }, 
 
   submitMatchInfo: function() {
@@ -104,33 +148,50 @@ Page({
 
     // 比赛信息发布或者追加
     const db = wx.cloud.database();
+    var updateTime = new Date().getTime();
+    this.data.matchInfo.updateTime = updateTime;
+    if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
+      this.data.matchInfo.referredOpeneIds.push(app.globalData.openid);
+    }
     var that = this;
-    if (this.data.updateMatchInfo) {
+    if (!this.data.publishNewMatch && app.globalData.publisher) {
       db.collection(app.globalData.dbName).doc(that.data.matchId).update({
         data: {
           subject: that.data.matchInfo.subject,
           time: that.data.matchInfo.time,
           location: that.data.matchInfo.location,
           askForLeaveList: that.data.matchInfo.askForLeaveList,
-          signUpList: that.data.matchInfo.signUpList
+          signUpList: that.data.matchInfo.signUpList,
+          updateTime: that.data.matchInfo.updateTime,
+          referredOpeneIds: that.data.matchInfo.referredOpeneIds
         },
         success: function (res) {
-          that.showToast("提示", "发布成功", false);
+          that.showToast("提示", "比赛发布成功", false);
         }
-      })
+      });
     } else {
       db.collection(app.globalData.dbName).add({
         data: that.data.matchInfo,
         success: function (res) {
-          that.showToast("提示", "发布成功", false);
+          that.showToast("提示", "比赛" + that.data.publishText + "成功", false);
         }
       })
     }
 
-    // 返回上一级页面
-    wx.navigateBack({
-      delta: 1,
-    })
+    this.toListPage();
+  },
+
+  toListPage: function() {
+    if(this.data.publisher) {
+      wx.navigateBack({
+        delta: 1,
+      })
+    } else {
+      var page_url = '/pages/list/list';
+      wx.redirectTo({
+        url: page_url,
+      })
+    }
   },
 
   toMapsPage: function() {
@@ -146,6 +207,16 @@ Page({
       content: content,
       showCancel: showCancel
     })
+  },
+
+  showTextList: function(list) {
+    var indexNameList = [];
+    for (let index=0; index < list.length; index++) {
+      var name = list[index];
+      var indexName = (index + 1) + "." + name;
+      indexNameList.push(indexName);
+    }
+    return indexNameList;
   },
 
   /**

@@ -10,7 +10,7 @@ page {
   height: auto;
   width: 100%;
   background: #fff;
-  padding: 0 40rpx;
+  padding: 0 20rpx 0 0;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-left: none;
   border-right: none;
@@ -48,7 +48,7 @@ page {
 .request-text {
   color: #222;
   padding: 20rpx 0;
-  font-size: 30rpx;
+  font-size: 28rpx;
   line-height: 36rpx;
   word-break: break-all;
 }

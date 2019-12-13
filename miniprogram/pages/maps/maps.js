@@ -46,8 +46,8 @@ Page({
           id: 0,
           latitude: that.data.latitude,
           longitude: that.data.longitude,
-          width: 25,
-          height: 40
+          width: 16.67,
+          height: 26.67
         }];
         that.data.markers = markers;
         console.log(that.data);
@@ -81,8 +81,8 @@ Page({
       id: 0,
       latitude: this.data.latitude,
       longitude: this.data.longitude,
-      width: 25,
-      height: 40
+      width: 16.67,
+      height: 26.67
     }];
     prevPage.setData({   
       matchInfo: matchInfo,

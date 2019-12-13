@@ -11,9 +11,12 @@
     <view class="page-section">
       <button type="primary" size="default" hover-class="other-button-hover" bindtap="toEditPage"> 新比赛 </button>
     </view>
-    <view class="list">
-      <view class="list-item" wx:for="{{matches}}" wx:for-item="item" data-index="{{index}}" bindtap="toEditPage">
-        <text class="request-text">比赛主题：{{item.subject}}\n比赛时间：{{item.time}}\n比赛地点：{{item.location.name}}（{{item.location.address}}）</text>
+    <view class="page-section">
+      <view class="list">
+        <view class="list-item" wx:for="{{matches}}" wx:for-item="item" data-index="{{index}}" bindtap="toEditPage">
+          <button class="btn-share" type="primary" plain="true" open-type="share" data-index="{{index}}" catchtap="true">分享</button>
+          <text class="request-text">比赛主题：{{item.subject}}\n比赛时间：{{item.time}}\n比赛地点：{{item.location.name}}（{{item.location.address}}）</text>
+        </view>
       </view>
     </view>
   </view>
