@@ -51,16 +51,16 @@ Page({
           if (that.data.matchInfo._openid != app.globalData.openid) {
             that.data.publisher = false;
             // 渲染页面
-            if (!this.data.publisher) {
-              this.data.publishText = '追加';
-              this.data.subjectDisabled = true;
-              this.data.timeDisabled = true;
-              this.data.locationDisabled = true;
-              this.setData({
-                publishText: this.data.publishText,
-                subjectDisabled: this.data.subjectDisabled,
-                timeDisabled: this.data.timeDisabled,
-                locationDisabled: this.data.locationDisabled,
+            if (!that.data.publisher) {
+              that.data.publishText = '追加';
+              that.data.subjectDisabled = true;
+              that.data.timeDisabled = true;
+              that.data.locationDisabled = true;
+              that.setData({
+                publishText: that.data.publishText,
+                subjectDisabled: that.data.subjectDisabled,
+                timeDisabled: that.data.timeDisabled,
+                locationDisabled: that.data.locationDisabled,
               });
             }
           }
@@ -124,12 +124,14 @@ Page({
   },
 
   getSubjectInput: function(event) {
-    this.data.matchInfo.subject = event.detail.value;
+    var inputStr = event.detail.value;
+    if (inputStr && inputStr.length > 0) {
+      this.data.matchInfo.subject = inputStr;
+    }
   },
 
   getSUInput: function (event) {
     var inputStr = event.detail.value;
-    console.log(inputStr);
     if (inputStr && inputStr.length > 0) {
       this.data.signUpStr = inputStr;
     }
@@ -176,6 +178,7 @@ Page({
       }
       // 执行更新操作
       if (this.data.publisher) {
+        console.log("local update");
         db.collection(app.globalData.dbName).doc(that.data.matchId).update({
           data: {
             subject: that.data.matchInfo.subject,
@@ -191,13 +194,15 @@ Page({
           }
         });
       } else {
+        console.log("cloud update");
         // 调用云函数
         wx.cloud.callFunction({
           name: 'update',
           data: {
-            id: that.data.openid,
+            id: that.data.matchId,
             signUpList: that.data.matchInfo.signUpList,
             askForLeaveList: that.data.matchInfo.askForLeaveList,
+            updateTime: that.data.matchInfo.updateTime,
             referredOpeneIds: that.data.matchInfo.referredOpeneIds
           },
           success: function(res) {
