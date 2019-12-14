@@ -50,6 +50,19 @@ Page({
           that.data.matchInfo = res.data[0];
           if (that.data.matchInfo._openid != app.globalData.openid) {
             that.data.publisher = false;
+            // 渲染页面
+            if (!this.data.publisher) {
+              this.data.publishText = '追加';
+              this.data.subjectDisabled = true;
+              this.data.timeDisabled = true;
+              this.data.locationDisabled = true;
+              this.setData({
+                publishText: this.data.publishText,
+                subjectDisabled: this.data.subjectDisabled,
+                timeDisabled: this.data.timeDisabled,
+                locationDisabled: this.data.locationDisabled,
+              });
+            }
           }
           var markers = [{
             iconPath: "../../images/marker_01.png",
