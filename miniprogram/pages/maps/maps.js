@@ -64,7 +64,7 @@ Page({
 
   toEditPage: function(e) {
     if (this.data.name === '' && this.data.address === '') {
-      this.showToast("提示", "还没有选择位置", false);
+      this.showToast("还没有选择位置");
       return;
     }
 
@@ -95,11 +95,10 @@ Page({
     })
   },
 
-  showToast: function (title, content, showCancel) {
-    wx.showModal({
-      title: title,
-      content: content,
-      showCancel: showCancel
-    })
+  showToast: function (content) {
+    wx.showToast({
+      icon: 'none',
+      title: content,
+    });
   },
 })
