@@ -40,7 +40,6 @@ App({
     // //从转发场景进入
     // var sceneIdList = [1007, 1008];
     // if (-1 != sceneIdList.indexOf(this.globalData.sceneId)) {
-    //   this.globalData.publisher = false;
     // }
   },
 })

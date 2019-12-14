@@ -19,11 +19,11 @@ Page({
       updateTime: 0,
       referredOpeneIds: []
     },
+    signUpStr: "",
+    askForLeaveStr: "",
     markers: [],
     matchId: "",
     pageDate: new Date(),
-    signUpListToString: '',
-    askForLeaveListToString: '',
     publishNewMatch: true,
     publisher: true,
     publishText: '发布',
@@ -51,10 +51,6 @@ Page({
           if (that.data.matchInfo._openid != app.globalData.openid) {
             that.data.publisher = false;
           }
-          var indexNameList = that.showTextList(that.data.matchInfo.signUpList);
-          that.data.signUpListToString = indexNameList.join(' | ');
-          indexNameList = that.showTextList(that.data.matchInfo.askForLeaveList)
-          that.data.askForLeaveListToString = indexNameList.join(' | ');
           var markers = [{
             iconPath: "../../images/marker_01.png",
             id: 0,
@@ -66,9 +62,7 @@ Page({
           console.log(that.data.matchInfo);
           that.setData({
             matchInfo: that.data.matchInfo,
-            markers: markers, 
-            signUpListToString: that.data.signUpListToString,
-            askForLeaveListToString: that.data.askForLeaveListToString
+            markers: markers
           })
         },
         fail: res => {
@@ -122,27 +116,32 @@ Page({
 
   getSUInput: function (event) {
     var inputStr = event.detail.value;
-    this.data.matchInfo.signUpList.push(inputStr);
+    console.log(inputStr);
+    if (inputStr && inputStr.length > 0) {
+      this.data.signUpStr = inputStr;
+    }
   }, 
 
   getAFLInput: function(event) {
     var inputStr = event.detail.value;
-    this.data.matchInfo.askForLeaveList.push(inputStr);
+    if (inputStr && inputStr.length > 0) {
+      this.data.askForLeaveStr = inputStr;
+    }
   }, 
 
   submitMatchInfo: function() {
     // 必须项判空操作
     if ('' === this.data.matchInfo.subject) {
-      this.showToast("提示", "请填写比赛主题", false);
+      this.showToast("请填写比赛主题");
       return;
     }
     if ('' === this.data.matchInfo.time) {
-      this.showToast("提示", "请选择日期和时间", false);
+      this.showToast("请选择日期和时间");
       return;
     }
     if ('' === this.data.matchInfo.location.name 
       && '' === this.data.matchInfo.location.address) {
-      this.showToast("提示", "请选取比赛位置", false);
+      this.showToast("请选取比赛位置");
       return;
     }
 
@@ -154,7 +153,14 @@ Page({
       this.data.matchInfo.referredOpeneIds.push(app.globalData.openid);
     }
     var that = this;
-    if (!this.data.publishNewMatch && app.globalData.publisher) {
+    if (!this.data.publishNewMatch && this.data.publisher) {
+      console.log("test update");
+      if (-1 == this.data.matchInfo.signUpList.indexOf(this.data.signUpStr)) {
+        this.data.matchInfo.signUpList.push(this.data.signUpStr);
+      }
+      if (-1 == this.data.matchInfo.askForLeaveList.indexOf(this.data.askForLeaveStr)) {
+        this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveStr);
+      }
       db.collection(app.globalData.dbName).doc(that.data.matchId).update({
         data: {
           subject: that.data.matchInfo.subject,
@@ -166,14 +172,15 @@ Page({
           referredOpeneIds: that.data.matchInfo.referredOpeneIds
         },
         success: function (res) {
-          that.showToast("提示", "比赛发布成功", false);
+          that.showToast("比赛发布成功");
         }
       });
     } else {
+      console.log("test update else");
       db.collection(app.globalData.dbName).add({
         data: that.data.matchInfo,
         success: function (res) {
-          that.showToast("提示", "比赛" + that.data.publishText + "成功", false);
+          that.showToast("比赛" + that.data.publishText + "成功");
         }
       })
     }
@@ -201,22 +208,11 @@ Page({
     })
   },
 
-  showToast: function(title, content, showCancel) {
-    wx.showModal({
-      title: title,
-      content: content,
-      showCancel: showCancel
-    })
-  },
-
-  showTextList: function(list) {
-    var indexNameList = [];
-    for (let index=0; index < list.length; index++) {
-      var name = list[index];
-      var indexName = (index + 1) + "." + name;
-      indexNameList.push(indexName);
-    }
-    return indexNameList;
+  showToast: function(content) {
+    wx.showToast({
+      icon: 'none',
+      title: content,
+    });
   },
 
   /**

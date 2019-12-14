@@ -38,6 +38,7 @@ input {
   padding: 10rpx;
   background-color: white;
   width: 93%;
+  height: 30rpx;
   border-radius: 5px;
   color: #333;
 }

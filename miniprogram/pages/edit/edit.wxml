@@ -16,14 +16,18 @@
       </picker>
     </view>
     <view class="page-section">
-      <text>报名列表：\n</text>
-      <text>{{signUpListToString}}</text>
-      <input placeholder="请报名" adjust-position='true' bindinput='getSUInput'></input>
+      <text>报名列表：</text>
+      <view wx:for="{{matchInfo.signUpList}}" wx:for-item="item" data-index="{{index}}">
+        <text>{{index+1}}.{{item}}</text>
+      </view>
+      <input placeholder="请报名" adjust-position='true' show-confirm-bar='true' bindinput='getSUInput'></input>
     </view>
     <view class="page-section">
       <text>请假列表：</text>
-      <text>{{askForLeaveListToString}}</text>
-      <input placeholder="请假" adjust-position='true' bindinput='getAFLInput'></input>
+      <view wx:for="{{matchInfo.askForLeaveList}}" wx:for-item="item" data-index="{{index}}">
+        <text>{{index+1}}.{{item}}</text>
+      </view>
+      <input placeholder="请假" adjust-position='true' show-confirm-bar='true' bindinput='getAFLInput'></input>
     </view>
     <view class="page-section">
       <button wx:if="{{!locationDisabled}}" type="primary" bindtap="toMapsPage" hover-class="other-button-hover"> 选取比赛位置 </button>

@@ -7,7 +7,8 @@ Page({
     avatarUrl: '../../images/user-unlogin.png',
     userInfo: {},
     openid: '',
-    matches: []
+    matches: [],
+    pageLoaded: false
   },
 
   onLoad: function (options) {
@@ -17,20 +18,23 @@ Page({
     });
 
     if (app.globalData.openid && app.globalData.openid != '') {
-      this.setData({
-        openid: app.globalData.openid
-      })
+      this.data.openid = app.globalData.openid;
     } else {
       var that = this;
       app.CallbackFn = data => {
-        console.log('CallbackFn data:' + data)
+        console.log('CallbackFn.data-->' + data)
         that.data.openid = data;
+        that.onQuery();
+        this.data.pageLoaded = true;
       }
-    }
+    } 
   },
 
   onShow: function() {
-    this.onQuery();
+    console.log("list->onShow");
+    if (this.data.pageLoaded) {
+      this.onQuery();
+    }
   },
 
   onPullDownRefresh: function() {
@@ -63,7 +67,7 @@ Page({
   onQuery: function() {
     var that = this;
     const db = wx.cloud.database();
-    const _ = db.command
+    const _ = db.command;
     db.collection(app.globalData.dbName).where(_.or([
       {
         _openid: that.data.openid
@@ -73,7 +77,7 @@ Page({
       }
     ])).get({
       success: res => {
-        console.log('[数据库] [查询记录] 成功: ', res.data)
+        console.log('[数据库] [查询记录] 成功: ', res.data);
         var matches = res.data;
         that.data.matches = matches.sort(function (a, b) {
           return b.updateTime - a.updateTime;
@@ -83,24 +87,17 @@ Page({
             matches: that.data.matches
           })
         } else {
-          wx.showToast({
-            icon: 'none',
-            title: '暂时没有历史比赛数据'
-          })
+          this.showToast("暂时没有历史比赛数据");
         }
       },
       fail: err => {
-        wx.showToast({
-          icon: 'none',
-          title: '获取比赛数据失败'
-        })
-        console.error('[数据库] [查询记录] 失败：', err)
+        console.error('[数据库] [查询记录] 失败：', err);
+        this.showToast("获取比赛数据失败");
       }
     })
   },
 
   toEditPage: function(e) {
-
     var page_url = '';
     if ('index' in e.currentTarget.dataset) {
       var index = parseInt(e.currentTarget.dataset.index);
@@ -112,5 +109,12 @@ Page({
     wx.navigateTo({
       url: page_url,
     })
+  },
+
+  showToast: function (content) {
+    wx.showToast({
+      icon: 'none',
+      title: content,
+    });
   },
 })
