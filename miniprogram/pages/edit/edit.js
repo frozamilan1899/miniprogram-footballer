@@ -166,30 +166,48 @@ Page({
       this.data.matchInfo.referredOpeneIds.push(app.globalData.openid);
     }
     var that = this;
-    if (!this.data.publishNewMatch && this.data.publisher) {
-      console.log("test update");
+    if (!this.data.publishNewMatch) {
+      console.log("update match info");
       if (-1 == this.data.matchInfo.signUpList.indexOf(this.data.signUpStr)) {
         this.data.matchInfo.signUpList.push(this.data.signUpStr);
       }
       if (-1 == this.data.matchInfo.askForLeaveList.indexOf(this.data.askForLeaveStr)) {
         this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveStr);
       }
-      db.collection(app.globalData.dbName).doc(that.data.matchId).update({
-        data: {
-          subject: that.data.matchInfo.subject,
-          time: that.data.matchInfo.time,
-          location: that.data.matchInfo.location,
-          askForLeaveList: that.data.matchInfo.askForLeaveList,
-          signUpList: that.data.matchInfo.signUpList,
-          updateTime: that.data.matchInfo.updateTime,
-          referredOpeneIds: that.data.matchInfo.referredOpeneIds
-        },
-        success: function (res) {
-          that.showToast("比赛发布成功");
-        }
-      });
+      // 执行更新操作
+      if (this.data.publisher) {
+        db.collection(app.globalData.dbName).doc(that.data.matchId).update({
+          data: {
+            subject: that.data.matchInfo.subject,
+            time: that.data.matchInfo.time,
+            location: that.data.matchInfo.location,
+            askForLeaveList: that.data.matchInfo.askForLeaveList,
+            signUpList: that.data.matchInfo.signUpList,
+            updateTime: that.data.matchInfo.updateTime,
+            referredOpeneIds: that.data.matchInfo.referredOpeneIds
+          },
+          success: function (res) {
+            that.showToast("比赛" + that.data.publishText + "成功");
+          }
+        });
+      } else {
+        // 调用云函数
+        wx.cloud.callFunction({
+          name: 'update',
+          data: {
+            id: that.data.openid,
+            signUpList: that.data.matchInfo.signUpList,
+            askForLeaveList: that.data.matchInfo.askForLeaveList,
+            referredOpeneIds: that.data.matchInfo.referredOpeneIds
+          },
+          success: function(res) {
+            console.log('[云函数] [update]: ', res);
+            that.showToast("比赛" + that.data.publishText + "成功");
+          }
+        })
+      }
     } else {
-      console.log("test update else");
+      console.log("add match info");
       db.collection(app.globalData.dbName).add({
         data: that.data.matchInfo,
         success: function (res) {

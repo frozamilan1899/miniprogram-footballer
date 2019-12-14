@@ -19,6 +19,7 @@ Page({
 
     if (app.globalData.openid && app.globalData.openid != '') {
       this.data.openid = app.globalData.openid;
+      this.data.pageLoaded = true;
     } else {
       var that = this;
       app.CallbackFn = data => {
@@ -38,6 +39,7 @@ Page({
   },
 
   onPullDownRefresh: function() {
+    console.log("list->onPullDownRefresh");
     this.onQuery();
   },
 
@@ -89,10 +91,12 @@ Page({
         } else {
           this.showToast("暂时没有历史比赛数据");
         }
+        wx.stopPullDownRefresh();
       },
       fail: err => {
         console.error('[数据库] [查询记录] 失败：', err);
         this.showToast("获取比赛数据失败");
+        wx.stopPullDownRefresh();
       }
     })
   },

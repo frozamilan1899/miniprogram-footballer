@@ -1,4 +1,5 @@
 {
   "navigationBarTitleText": "Footballer",
-  "usingComponents": {}
+  "usingComponents": {},
+  "enablePullDownRefresh": true
 }
