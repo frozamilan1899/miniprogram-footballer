@@ -26,7 +26,7 @@ Page({
         console.log('CallbackFn.data-->' + data)
         that.data.openid = data;
         that.onQuery();
-        this.data.pageLoaded = true;
+        that.data.pageLoaded = true;
       }
     } 
   },
@@ -85,17 +85,22 @@ Page({
           return b.updateTime - a.updateTime;
         });
         if (that.data.matches.length > 0) {
+          for (let i = 0; i < that.data.matches.length; i++) {
+            if (that.data.matches[i]._openid != that.data.openid) {
+              that.data.matches[i].batStyle = "color:red";
+            }
+          }
           that.setData({
             matches: that.data.matches
           })
         } else {
-          this.showToast("暂时没有历史比赛数据");
+          that.showToast("暂时没有历史比赛数据");
         }
         wx.stopPullDownRefresh();
       },
       fail: err => {
         console.error('[数据库] [查询记录] 失败：', err);
-        this.showToast("获取比赛数据失败");
+        that.showToast("获取比赛数据失败");
         wx.stopPullDownRefresh();
       }
     })

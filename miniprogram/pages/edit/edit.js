@@ -26,7 +26,7 @@ Page({
     pageDate: new Date(),
     publishNewMatch: true,
     publisher: true,
-    publishText: '发布',
+    publishText: '发布比赛',
     subjectDisabled: false,
     timeDisabled: false,
     locationDisabled: false,
@@ -50,19 +50,7 @@ Page({
           that.data.matchInfo = res.data[0];
           if (that.data.matchInfo._openid != app.globalData.openid) {
             that.data.publisher = false;
-            // 渲染页面
-            if (!that.data.publisher) {
-              that.data.publishText = '追加';
-              that.data.subjectDisabled = true;
-              that.data.timeDisabled = true;
-              that.data.locationDisabled = true;
-              that.setData({
-                publishText: that.data.publishText,
-                subjectDisabled: that.data.subjectDisabled,
-                timeDisabled: that.data.timeDisabled,
-                locationDisabled: that.data.locationDisabled,
-              });
-            }
+            this.renderPage(that, '报名或请假', true);
           }
           var markers = [{
             iconPath: "../../images/marker_01.png",
@@ -89,36 +77,28 @@ Page({
   },
 
   onShow: function() {
-    // 渲染页面
-    if (!this.data.publisher) {
-      this.data.publishText = '追加';
-      this.data.subjectDisabled = true;
-      this.data.timeDisabled = true;
-      this.data.locationDisabled = true;
-      this.setData({
-        publishText: this.data.publishText,
-        subjectDisabled: this.data.subjectDisabled,
-        timeDisabled: this.data.timeDisabled,
-        locationDisabled: this.data.locationDisabled,
-      });
-    }
+    this.renderPage(this, '报名或请假', true);
     this.setData({
       matchInfo: this.data.matchInfo
     })
   },
 
   onUnload: function() {
+    this.renderPage(this, '发布比赛', false);
+  },
+
+  renderPage: function (_this, pText, disabled) {
     // 渲染页面
-    if (!this.data.publisher) {
-      this.data.publishText = '发布';
-      this.data.subjectDisabled = false;
-      this.data.timeDisabled = false;
-      this.data.locationDisabled = false;
-      this.setData({
-        publishText: this.data.publishText,
-        subjectDisabled: this.data.subjectDisabled,
-        timeDisabled: this.data.timeDisabled,
-        locationDisabled: this.data.locationDisabled,
+    if (!_this.data.publisher) {
+      _this.data.publishText = pText;
+      _this.data.subjectDisabled = disabled;
+      _this.data.timeDisabled = disabled;
+      _this.data.locationDisabled = disabled;
+      _this.setData({
+        publishText: _this.data.publishText,
+        subjectDisabled: _this.data.subjectDisabled,
+        timeDisabled: _this.data.timeDisabled,
+        locationDisabled: _this.data.locationDisabled,
       });
     }
   },
@@ -170,11 +150,13 @@ Page({
     var that = this;
     if (!this.data.publishNewMatch) {
       console.log("update match info");
-      if (-1 == this.data.matchInfo.signUpList.indexOf(this.data.signUpStr)) {
-        this.data.matchInfo.signUpList.push(this.data.signUpStr);
+      var signUpStr = this.data.signUpStr;
+      if (-1 == this.data.matchInfo.signUpList.indexOf(signUpStr) && signUpStr != '') {
+        this.data.matchInfo.signUpList.push(signUpStr);
       }
-      if (-1 == this.data.matchInfo.askForLeaveList.indexOf(this.data.askForLeaveStr)) {
-        this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveStr);
+      var askForLeaveStr = this.data.askForLeaveStr;
+      if (-1 == this.data.matchInfo.askForLeaveList.indexOf(askForLeaveStr) && askForLeaveStr != '') {
+        this.data.matchInfo.askForLeaveList.push(askForLeaveStr);
       }
       // 执行更新操作
       if (this.data.publisher) {
@@ -190,11 +172,15 @@ Page({
             referredOpeneIds: that.data.matchInfo.referredOpeneIds
           },
           success: function (res) {
-            that.showToast("比赛" + that.data.publishText + "成功");
+            that.showToast(that.data.publishText + "成功");
           }
         });
       } else {
         console.log("cloud update");
+        if ('' === this.data.signUpStr && '' === this.data.askForLeaveStr) {
+          this.showToast("请追加报名或请假");
+          return;
+        }
         // 调用云函数
         wx.cloud.callFunction({
           name: 'update',
@@ -207,7 +193,7 @@ Page({
           },
           success: function(res) {
             console.log('[云函数] [update]: ', res);
-            that.showToast("比赛" + that.data.publishText + "成功");
+            that.showToast(that.data.publishText + "成功");
           }
         })
       }
@@ -216,7 +202,7 @@ Page({
       db.collection(app.globalData.dbName).add({
         data: that.data.matchInfo,
         success: function (res) {
-          that.showToast("比赛" + that.data.publishText + "成功");
+          that.showToast(that.data.publishText + "成功");
         }
       })
     }
