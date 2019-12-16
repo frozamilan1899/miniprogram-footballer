@@ -3,21 +3,19 @@
 <view class="container">
   <view class="page-body">
     <view class="userInfo">
-      <view class="userAvatar">
-        <open-data type="userAvatarUrl"></open-data>
-      </view>
-      <open-data type="userNickName"></open-data>
-    </view>
-    <view class="page-section">
-      <button type="primary" size="default" hover-class="other-button-hover" bindtap="toEditPage"> 新比赛 </button>
-    </view>
-    <view class="page-section">
-      <view class="list">
-        <view class="list-item" wx:for="{{matches}}" wx:for-item="item" data-index="{{index}}" bindtap="toEditPage">
-          <button class="btn-share" type="primary" plain="true" open-type="share" data-index="{{index}}" catchtap="true">分享</button>
-          <text class="request-text" style="{{item.batStyle}}">比赛主题：{{item.subject}}\n比赛时间：{{item.time}}\n比赛地点：{{item.location.name}}（{{item.location.address}}）</text>
+        <view class="userAvatar">
+          <open-data type="userAvatarUrl"></open-data>
         </view>
+        <open-data type="userNickName"></open-data>
       </view>
-    </view>
+    <button type="primary" size="default" hover-class="other-button-hover" bindtap="toEditPage"> 新比赛 </button>
+    <mp-cells title="近期所有参与过的比赛" footer="提示：左滑可分享/删除">
+        <mp-slideview buttons="{{slideButtons}}" bindbuttontap="slideButtonTap" wx:for="{{matches}}" wx:for-item="item" data-index="{{index}}">
+          <mp-cell ext-class="mycell-text" link hover url="../edit/edit?id={{item._id}}">
+            <view style="{{item.batStyle}}">{{item.subject}}</view>
+            <view slot="footer">{{item.time}}</view>
+          </mp-cell>
+        </mp-slideview>
+      </mp-cells>
   </view>
 </view>

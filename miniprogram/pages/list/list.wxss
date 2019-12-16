@@ -1,7 +1,5 @@
 /* list.wxss */
 
-@import "../../style/guide.wxss";
-
 .page-body {
   background: #f6f6f6;
   display: flex;
@@ -17,20 +15,17 @@
 }
 
 button {
-  margin-top: 10px;
   margin-left: 10px;
   margin-right: 10px;
 }
 
-.btn-share { 
-  width: 80px;
-  height: 30px;
-  font-size: 24rpx;
-  color: #333; 
-}
-
 .other-button-hover {
   background-color: blue;
+}
+
+.mycell-text {
+  color: #333;
+  font-size: 30rpx;
 }
 
 .userInfo {

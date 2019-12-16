@@ -28,7 +28,55 @@ Page({
         that.onQuery();
         that.data.pageLoaded = true;
       }
-    } 
+    }
+
+    this.setData({
+      slideButtons: [{
+        text: '分享',
+        data: 0
+      }, {
+        type: 'warn',
+        text: '删除',
+        data: 1
+      }]
+    });
+  },
+
+  slideButtonTap(e) {
+    console.log('slide button tap', e.detail);
+    switch (e.detail.data) {
+      case 0: {
+        console.log(e.detail.data);
+        wx.showModal({
+          title: 'tips',
+          content: e.detail
+        });
+      }
+      break;
+      case 1: {
+        var index = parseInt(e.detail.index);
+        if (index >= 1) {
+          index = index - 1;
+        }
+        const db = wx.cloud.database();
+        const _ = db.command;
+        var _id = this.data.matches[index]._id;
+        var that = this;
+        db.collection(app.globalData.dbName).doc(_id).remove({
+          success: res => {
+            that.onQuery();
+            that.showToast("删除比赛成功");
+          },
+          fail: err => {
+            that.showToast("删除比赛失败");
+          }
+        });
+      }
+      break;
+      default: {
+        console.error('unknown data');
+      }
+    }
   },
 
   onShow: function() {
@@ -70,6 +118,9 @@ Page({
     var that = this;
     const db = wx.cloud.database();
     const _ = db.command;
+    wx.showLoading({
+      title: '加载中...',
+    })
     db.collection(app.globalData.dbName).where(_.or([
       {
         _openid: that.data.openid
@@ -96,25 +147,25 @@ Page({
         } else {
           that.showToast("暂时没有历史比赛数据");
         }
+        wx.hideLoading();
         wx.stopPullDownRefresh();
       },
       fail: err => {
         console.error('[数据库] [查询记录] 失败：', err);
         that.showToast("获取比赛数据失败");
+        wx.hideLoading();
         wx.stopPullDownRefresh();
       }
     })
   },
 
   toEditPage: function(e) {
-    var page_url = '';
-    if ('index' in e.currentTarget.dataset) {
-      var index = parseInt(e.currentTarget.dataset.index);
-      var _id = this.data.matches[index]._id;
-      page_url = '/pages/edit/edit?id=' + _id;
-    } else {
-      page_url = '/pages/edit/edit';
-    }
+    var page_url = '/pages/edit/edit';
+    // if ('index' in e.currentTarget.dataset) {
+    //   var index = parseInt(e.currentTarget.dataset.index);
+    //   var _id = this.data.matches[index]._id;
+    //   page_url += '?id=' + _id;
+    // } 
     wx.navigateTo({
       url: page_url,
     })
