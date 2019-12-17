@@ -3,9 +3,6 @@
 @import './miniprogram_npm/weui-miniprogram/weui-wxss/dist/style/weui.wxss';
 
 .container {
-  position: fixed;
-  height: 100%;
-  width: 100%;
   background: #f6f6f6;
   display: flex;
   flex-direction: column;
