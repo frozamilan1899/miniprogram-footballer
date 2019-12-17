@@ -2,6 +2,10 @@
 
 @import './miniprogram_npm/weui-miniprogram/weui-wxss/dist/style/weui.wxss';
 
+page {
+  background: #f6f6f6;
+}
+
 .container {
   background: #f6f6f6;
   display: flex;
