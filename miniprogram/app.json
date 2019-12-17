@@ -1,9 +1,7 @@
 {
   "pages": [
     "pages/list/list",
-    "pages/edit/edit",
-    "pages/maps/maps",
-    "pages/test/test"
+    "pages/edit/edit"
   ],
   "window": {
     "backgroundColor": "#F6F6F6",

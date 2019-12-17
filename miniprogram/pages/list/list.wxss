@@ -26,6 +26,15 @@ button {
 .mycell-text {
   color: #333;
   font-size: 30rpx;
+  display: flex;
+  flex-direction: row;
+}
+
+.mycell-btn-share {
+  color: #333;
+  width: 60px;
+  height: 30px;
+  font-size: 28rpx;
 }
 
 .userInfo {

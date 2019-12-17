@@ -3,7 +3,7 @@ const app = getApp()
 
 Page({
   data: {
-    multiArray: [['今天', '明天', '3-2', '3-3', '3-4', '3-5'], [0, 1, 2, 3, 4, 5, 6], [0, 10, 20]],
+    multiArray: [['3-1', '3-2', '3-3', '3-4', '3-5'], [0, 1, 2, 3, 4, 5, 6], [0, 10, 20]],
     multiIndex: [0, 0, 0],
     matchInfo: {
       subject: "",
@@ -11,16 +11,22 @@ Page({
       signUpList: [],
       askForLeaveList: [],
       location: {
-        longitude: 108.95000,
-        latitude: 34.26667,
+        longitude: 0.0,
+        latitude: 0.0,
         name: '',
         address: ''
       },
       updateTime: 0,
       referredOpeneIds: []
     },
-    signUpStr: "",
-    askForLeaveStr: "",
+    signUpMap: {
+      openid: "",
+      content: ""
+    },
+    askForLeaveMap: {
+      openid: "",
+      content: ""
+    },
     markers: [],
     matchId: "",
     pageDate: new Date(),
@@ -30,6 +36,12 @@ Page({
     subjectDisabled: false,
     timeDisabled: false,
     locationDisabled: false,
+    currentLocation: {
+      longitude: 108.95000,
+      latitude: 34.26667,
+      name: '',
+      address: ''
+    }
   },
 
   onLoad: function(options) {
@@ -52,6 +64,7 @@ Page({
             that.data.publisher = false;
             this.renderPage(that, '报名或请假', true);
           }
+          that.data.currentLocation = that.data.matchInfo.location;
           var markers = [{
             iconPath: "../../images/marker_01.png",
             id: 0,
@@ -60,10 +73,11 @@ Page({
             width: 16.67,
             height: 26.67
           }];
+          that.data.markers = markers;
           console.log(that.data.matchInfo);
           that.setData({
             matchInfo: that.data.matchInfo,
-            markers: markers
+            markers: that.data.markers
           })
         },
         fail: res => {
@@ -73,6 +87,8 @@ Page({
       })
     } else {
       this.data.publishNewMatch = true;
+      //获取当前位置
+      this.getLocation();
     }
   },
 
@@ -113,14 +129,20 @@ Page({
   getSUInput: function (event) {
     var inputStr = event.detail.value;
     if (inputStr && inputStr.length > 0) {
-      this.data.signUpStr = inputStr;
+      this.data.signUpMap = {
+        openid: app.globalData.openid,
+        content: inputStr
+      };
     }
   }, 
 
   getAFLInput: function(event) {
     var inputStr = event.detail.value;
     if (inputStr && inputStr.length > 0) {
-      this.data.askForLeaveStr = inputStr;
+      this.data.askForLeaveMap = {
+        openid: app.globalData.openid,
+        content: inputStr
+      };
     }
   }, 
 
@@ -150,13 +172,25 @@ Page({
     var that = this;
     if (!this.data.publishNewMatch) {
       console.log("update match info");
-      var signUpStr = this.data.signUpStr;
-      if (-1 == this.data.matchInfo.signUpList.indexOf(signUpStr) && signUpStr != '') {
-        this.data.matchInfo.signUpList.push(signUpStr);
+      var existedInList = false;
+      for (var signUpMap in this.data.matchInfo.signUpList) {
+        if (this.data.signUpMap.openid == signUpMap.openid && this.data.signUpMap.content == signUpMap.content) {
+          existedInList = true;
+          break;
+        }
       }
-      var askForLeaveStr = this.data.askForLeaveStr;
-      if (-1 == this.data.matchInfo.askForLeaveList.indexOf(askForLeaveStr) && askForLeaveStr != '') {
-        this.data.matchInfo.askForLeaveList.push(askForLeaveStr);
+      if (!existedInList && this.data.signUpMap.content != '') {
+        this.data.matchInfo.signUpList.push(this.data.signUpMap);
+      }
+      existedInList = false;
+      for (var askForLeaveMap in this.data.matchInfo.askForLeaveList) {
+        if (this.data.askForLeaveMap.openid == askForLeaveMap.openid && this.data.askForLeaveMap.content == askForLeaveMap.content) {
+          existedInList = true;
+          break;
+        }
+      }
+      if (!existedInList && this.data.askForLeaveMap.content != '') {
+        this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveMap);
       }
       // 执行更新操作
       if (this.data.publisher) {
@@ -177,7 +211,7 @@ Page({
         });
       } else {
         console.log("cloud update");
-        if ('' === this.data.signUpStr && '' === this.data.askForLeaveStr) {
+        if ('' === this.data.signUpMap.content && '' === this.data.askForLeaveMap.content) {
           this.showToast("请追加报名或请假");
           return;
         }
@@ -195,7 +229,7 @@ Page({
             console.log('[云函数] [update]: ', res);
             that.showToast(that.data.publishText + "成功");
           }
-        })
+        });
       }
     } else {
       console.log("add match info");
@@ -223,18 +257,80 @@ Page({
     }
   },
 
-  toMapsPage: function() {
-    var page_url = '/pages/maps/maps';
-    wx.navigateTo({
-      url: page_url,
-    })
-  },
-
   showToast: function(content) {
     wx.showToast({
       icon: 'none',
       title: content,
     });
+  },
+
+  /**
+   * ================================================================
+   * map相关的代码，使用页面变量pageDate
+   * ================================================================
+   */
+  getLocation: function(e) {
+    var that = this;
+    wx.getLocation({
+      success: function (res) {
+        console.log(res);
+        that.data.currentLocation.longitude = res.longitude;
+        that.data.currentLocation.latitude = res.latitude;
+        var matchInfo = that.data.matchInfo;
+        matchInfo.location = that.data.currentLocation;
+        that.data.matchInfo = matchInfo;
+        var markers = [{
+          iconPath: "../../images/marker_01.png",
+          id: 0,
+          latitude: that.data.currentLocation.latitude,
+          longitude: that.data.currentLocation.longitude,
+          width: 16.67,
+          height: 26.67
+        }];
+        that.data.markers = markers;
+        that.setData({
+          matchInfo: matchInfo,
+          markers: that.data.markers
+        });
+      },
+    })
+  },
+
+  openLocation: function(e) {
+    var that = this;
+    wx.openLocation({
+      latitude: that.data.currentLocation.latitude,
+      longitude: that.data.currentLocation.longitude,
+    })
+  },
+
+  chooseLocation: function(e) {
+    var that = this;
+    wx.chooseLocation({
+      success: function (res) {
+        console.log(res);
+        that.data.currentLocation.longitude = res.longitude;
+        that.data.currentLocation.latitude = res.latitude;
+        that.data.currentLocation.name = res.name;
+        that.data.currentLocation.address = res.address;
+        var matchInfo = that.data.matchInfo;
+        matchInfo.location = that.data.currentLocation;
+        that.data.matchInfo = matchInfo;
+        var markers = [{
+          iconPath: "../../images/marker_01.png",
+          id: 0,
+          latitude: that.data.currentLocation.latitude,
+          longitude: that.data.currentLocation.longitude,
+          width: 16.67,
+          height: 26.67
+        }];
+        that.data.markers = markers;
+        that.setData({
+          matchInfo: matchInfo,
+          markers: that.data.markers
+        });
+      },
+    })
   },
 
   /**
@@ -260,15 +356,15 @@ Page({
     //   console.log(date);
     // } 
     this.data.pageDate = date;
-    
-    var monthDay = ['今天', '明天'];
+  
+    var monthDay = [];
     var hours = [];
     var minute = [];
     var currentHours = date.getHours();
     var currentMinute = date.getMinutes();
 
     // 月-日
-    for (var i = 2; i <= 28; i++) {
+    for (var i = 0; i <= 28; i++) {
       var date1 = new Date(date);
       date1.setDate(date.getDate() + i);
       var md = (date1.getMonth() + 1) + "-" + date1.getDate();
@@ -319,13 +415,8 @@ Page({
   bindMultiPickerColumnChange: function (e) {
     
     var date = this.data.pageDate;
-    var that = this;
-    var monthDay = ['今天', '明天'];
     var hours = [];
     var minute = [];
-    var currentHours = date.getHours();
-    var currentMinute = date.getMinutes();
-
     var data = {
       multiArray: this.data.multiArray,
       multiIndex: this.data.multiIndex
@@ -337,11 +428,9 @@ Page({
     if (e.detail.column === 0) {
       // 如果第一列滚动到第一行
       if (e.detail.value === 0) {
-
-        that.loadData(hours, minute);
-
+        this.loadData(hours, minute);
       } else {
-        that.loadHoursMinute(hours, minute);
+        this.loadHoursMinute(hours, minute);
       }
 
       data.multiIndex[1] = 0;
@@ -353,13 +442,13 @@ Page({
       // 如果第一列为今天
       if (data.multiIndex[0] === 0) {
         if (e.detail.value === 0) {
-          that.loadData(hours, minute);
+          this.loadData(hours, minute);
         } else {
-          that.loadMinute(hours, minute);
+          this.loadMinute(hours, minute);
         }
         // 第一列不为今天
       } else {
-        that.loadHoursMinute(hours, minute);
+        this.loadHoursMinute(hours, minute);
       }
       data.multiIndex[2] = 0;
 
@@ -370,12 +459,12 @@ Page({
 
         // 如果第一列为 '今天'并且第二列为当前时间
         if (data.multiIndex[1] === 0) {
-          that.loadData(hours, minute);
+          this.loadData(hours, minute);
         } else {
-          that.loadMinute(hours, minute);
+          this.loadMinute(hours, minute);
         }
       } else {
-        that.loadHoursMinute(hours, minute);
+        this.loadHoursMinute(hours, minute);
       }
     }
     data.multiArray[1] = hours;

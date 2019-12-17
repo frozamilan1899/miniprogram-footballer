@@ -25,52 +25,25 @@ Page({
       app.CallbackFn = data => {
         console.log('CallbackFn.data-->' + data)
         that.data.openid = data;
-        that.onQuery();
+        that.onQuery(that);
         that.data.pageLoaded = true;
       }
     }
 
     this.setData({
       slideButtons: [{
-        text: '分享',
-        data: 0
-      }, {
         type: 'warn',
         text: '删除',
-        data: 1
       }]
     });
   },
 
   slideButtonTap(e) {
     console.log('slide button tap', e.detail);
-    switch (e.detail.data) {
+    var dataIndex = parseInt(e.target.dataset.index);
+    switch (e.detail.index) {
       case 0: {
-        console.log(e.detail.data);
-        wx.showModal({
-          title: 'tips',
-          content: e.detail
-        });
-      }
-      break;
-      case 1: {
-        var index = parseInt(e.detail.index);
-        if (index >= 1) {
-          index = index - 1;
-        }
-        const db = wx.cloud.database();
-        const _ = db.command;
-        var _id = this.data.matches[index]._id;
-        var that = this;
-        db.collection(app.globalData.dbName).doc(_id).remove({
-          success: res => {
-            that.onQuery();
-            that.showToast("删除比赛成功");
-          },
-          fail: err => {
-            that.showToast("删除比赛失败");
-          }
-        });
+        this.deleteMatch(dataIndex);
       }
       break;
       default: {
@@ -82,13 +55,13 @@ Page({
   onShow: function() {
     console.log("list->onShow");
     if (this.data.pageLoaded) {
-      this.onQuery();
+      this.onQuery(this);
     }
   },
 
   onPullDownRefresh: function() {
     console.log("list->onPullDownRefresh");
-    this.onQuery();
+    this.onQuery(this);
   },
 
   onShareAppMessage: function (option) {
@@ -114,49 +87,116 @@ Page({
     }
   },
 
-  onQuery: function() {
-    var that = this;
+  onQuery: function(_this) {
     const db = wx.cloud.database();
     const _ = db.command;
     wx.showLoading({
       title: '加载中...',
-    })
+    });
     db.collection(app.globalData.dbName).where(_.or([
       {
-        _openid: that.data.openid
+        _openid: _this.data.openid
       },
       {
-        referredOpeneIds: that.data.openid
+        referredOpeneIds: _this.data.openid
       }
     ])).get({
       success: res => {
         console.log('[数据库] [查询记录] 成功: ', res.data);
         var matches = res.data;
-        that.data.matches = matches.sort(function (a, b) {
+        _this.data.matches = matches.sort(function (a, b) {
           return b.updateTime - a.updateTime;
         });
-        if (that.data.matches.length > 0) {
-          for (let i = 0; i < that.data.matches.length; i++) {
-            if (that.data.matches[i]._openid != that.data.openid) {
-              that.data.matches[i].batStyle = "color:red";
+        if (_this.data.matches.length > 0) {
+          for (let i = 0; i < _this.data.matches.length; i++) {
+            if (_this.data.matches[i]._openid != _this.data.openid) {
+              _this.data.matches[i].batStyle = "color:red";
             }
           }
-          that.setData({
-            matches: that.data.matches
-          })
         } else {
-          that.showToast("暂时没有历史比赛数据");
+          _this.showToast("暂时没有历史比赛数据");
         }
+        _this.setData({
+          matches: _this.data.matches
+        });
         wx.hideLoading();
         wx.stopPullDownRefresh();
       },
       fail: err => {
         console.error('[数据库] [查询记录] 失败：', err);
-        that.showToast("获取比赛数据失败");
+        _this.showToast("获取比赛数据失败");
         wx.hideLoading();
         wx.stopPullDownRefresh();
       }
     })
+  },
+
+  deleteMatch: function (dataIndex) {
+    wx.showLoading({
+      title: '删除中...',
+    });
+    const db = wx.cloud.database();
+    var matchInfo = this.data.matches[dataIndex];
+    var _id = matchInfo._id;
+    var _openid = matchInfo._openid;
+    var that = this;
+    if (_openid != that.data.openid) {
+
+      // 删除所有报名信息
+      for (let i = 0; i < matchInfo.signUpList.length; i++) {
+        var signUpMap = matchInfo.signUpList[i];
+        if (signUpMap.openid == that.data.openid) {
+          matchInfo.signUpList.splice(i, 1);
+        }
+      }
+      // 删除所有请假信息
+      for (let i = 0; i < matchInfo.signUpList.length; i++) {
+        var askForLeaveMap = matchInfo.askForLeaveList[i];
+        if (askForLeaveMap.openid == that.data.openid) {
+          matchInfo.askForLeaveList.splice(i, 1);
+        }
+      }
+      // 删除关联openid
+      for (let i = 0; i < matchInfo.referredOpeneIds.length; i++) {
+        var tmpOpenid = matchInfo.referredOpeneIds[i];
+        if (tmpOpenid == that.data.openid) {
+          matchInfo.referredOpeneIds.splice(i, 1);
+        }
+      }
+      // 调用云函数
+      wx.cloud.callFunction({
+        name: 'update',
+        data: {
+          id: _id,
+          signUpList: matchInfo.signUpList,
+          askForLeaveList: matchInfo.askForLeaveList,
+          updateTime: new Date().getTime(),
+          referredOpeneIds: matchInfo.referredOpeneIds
+        },
+        success: function(res) {
+          console.log('[云函数] [update]: ', res);
+          wx.hideLoading();
+          that.onQuery(that);
+          that.showToast("删除比赛成功");
+        },
+        fail: function(res) {
+          wx.hideLoading();
+          that.showToast("删除比赛失败");
+        }
+      });
+    } else {
+      db.collection(app.globalData.dbName).doc(_id).remove({
+        success: res => {
+          wx.hideLoading();
+          that.onQuery(that);
+          that.showToast("删除比赛成功");
+        },
+        fail: err => {
+          wx.hideLoading();
+          that.showToast("删除比赛失败");
+        }
+      });
+    }
   },
 
   toEditPage: function(e) {

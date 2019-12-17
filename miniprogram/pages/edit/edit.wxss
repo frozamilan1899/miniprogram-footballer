@@ -45,7 +45,7 @@ input {
 
 #map {
   width: 95%; 
-  height: 310px;
+  height: 200px;
   margin-top: 20rpx;
   margin-left: 20rpx;
   border: 1px #333 solid;
