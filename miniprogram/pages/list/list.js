@@ -29,7 +29,7 @@ Page({
         that.data.pageLoaded = true;
       }
     }
-
+    
     this.setData({
       slideButtons: [{
         type: 'warn',
@@ -64,18 +64,26 @@ Page({
     this.onQuery(this);
   },
 
+  onReachBottom: function() {
+    console.log("list->onPullDownRefresh");
+    this.showToast("没有更多比赛了");
+  },
+
   onShareAppMessage: function (option) {
     console.log(option);
+    var shareTitle;
     var sharePath;
     if (option.from === 'button') {
+      shareTitle = "在这里，你可以发布新的友谊赛！";
       var index = parseInt(option.target.dataset.index);
       var _id = this.data.matches[index]._id;
       sharePath = "/pages/edit/edit?id=" + _id;
     } else {
+      shareTitle = "@所有人 有新的友谊赛发布啦，快来报名！";
       sharePath = "/pages/list/list";
     }
     return {
-      title: "报名参加比赛啦",
+      title: shareTitle,
       imageUrl: "../../images/playground.png",
       path: sharePath,
       success: function(res) {
@@ -132,68 +140,94 @@ Page({
   },
 
   deleteMatch: function (dataIndex) {
-    wx.showLoading({
-      title: '删除中...',
-    });
     const db = wx.cloud.database();
     var matchInfo = this.data.matches[dataIndex];
     var _id = matchInfo._id;
     var _openid = matchInfo._openid;
     var that = this;
     if (_openid != that.data.openid) {
-
-      // 删除所有报名信息
-      for (let i = 0; i < matchInfo.signUpList.length; i++) {
-        var signUpMap = matchInfo.signUpList[i];
-        if (signUpMap.openid == that.data.openid) {
-          matchInfo.signUpList.splice(i, 1);
-        }
-      }
-      // 删除所有请假信息
-      for (let i = 0; i < matchInfo.signUpList.length; i++) {
-        var askForLeaveMap = matchInfo.askForLeaveList[i];
-        if (askForLeaveMap.openid == that.data.openid) {
-          matchInfo.askForLeaveList.splice(i, 1);
-        }
-      }
-      // 删除关联openid
-      for (let i = 0; i < matchInfo.referredOpeneIds.length; i++) {
-        var tmpOpenid = matchInfo.referredOpeneIds[i];
-        if (tmpOpenid == that.data.openid) {
-          matchInfo.referredOpeneIds.splice(i, 1);
-        }
-      }
-      // 调用云函数
-      wx.cloud.callFunction({
-        name: 'update',
-        data: {
-          id: _id,
-          signUpList: matchInfo.signUpList,
-          askForLeaveList: matchInfo.askForLeaveList,
-          updateTime: new Date().getTime(),
-          referredOpeneIds: matchInfo.referredOpeneIds
-        },
-        success: function(res) {
-          console.log('[云函数] [update]: ', res);
-          wx.hideLoading();
-          that.onQuery(that);
-          that.showToast("删除比赛成功");
-        },
-        fail: function(res) {
-          wx.hideLoading();
-          that.showToast("删除比赛失败");
+      wx.showModal({
+        title: '提示',
+        content: '此操作仅会删除您的报名或请假数据，不会删除原UP主的比赛，是否继续删除？',
+        cancelText: '取消',
+        confirmText: '删除',
+        success(res) {
+          if (res.cancel) {
+            console.log(res);
+          } else if (res.confirm) {
+            wx.showLoading({
+              title: '删除中...',
+            });
+            // 删除所有报名信息
+            for (let i = 0; i < matchInfo.signUpList.length; i++) {
+              var signUpMap = matchInfo.signUpList[i];
+              if (signUpMap.openid == that.data.openid) {
+                matchInfo.signUpList.splice(i, 1);
+              }
+            }
+            // 删除所有请假信息
+            for (let i = 0; i < matchInfo.signUpList.length; i++) {
+              var askForLeaveMap = matchInfo.askForLeaveList[i];
+              if (askForLeaveMap.openid == that.data.openid) {
+                matchInfo.askForLeaveList.splice(i, 1);
+              }
+            }
+            // 删除关联openid
+            for (let i = 0; i < matchInfo.referredOpeneIds.length; i++) {
+              var tmpOpenid = matchInfo.referredOpeneIds[i];
+              if (tmpOpenid == that.data.openid) {
+                matchInfo.referredOpeneIds.splice(i, 1);
+              }
+            }
+            // 调用云函数
+            wx.cloud.callFunction({
+              name: 'update',
+              data: {
+                id: _id,
+                signUpList: matchInfo.signUpList,
+                askForLeaveList: matchInfo.askForLeaveList,
+                updateTime: new Date().getTime(),
+                referredOpeneIds: matchInfo.referredOpeneIds
+              },
+              success: function (res) {
+                console.log('[云函数] [update]: ', res);
+                wx.hideLoading();
+                that.onQuery(that);
+                that.showToast("删除比赛成功");
+              },
+              fail: function (res) {
+                wx.hideLoading();
+                that.showToast("删除比赛失败");
+              }
+            });
+          }
         }
       });
     } else {
-      db.collection(app.globalData.dbName).doc(_id).remove({
-        success: res => {
-          wx.hideLoading();
-          that.onQuery(that);
-          that.showToast("删除比赛成功");
-        },
-        fail: err => {
-          wx.hideLoading();
-          that.showToast("删除比赛失败");
+      wx.showModal({
+        title: '提示',
+        content: '作为比赛的UP主，此操作会删除参与这场比赛所有人的报名或请假数据，是否继续删除？',
+        cancelText: '取消',
+        confirmText: '删除',
+        success(res) {
+          if (res.cancel) {
+            console.log(res);
+          } else if (res.confirm) {
+            wx.showLoading({
+              title: '删除中...',
+            });
+            db.collection(app.globalData.dbName).doc(_id).remove({
+              success: res => {
+                wx.hideLoading();
+                that.onQuery(that);
+                that.showToast("删除比赛成功");
+              },
+              fail: err => {
+                wx.hideLoading();
+                that.showToast("删除比赛失败");
+              }
+            });
+          }
         }
       });
     }
@@ -201,11 +235,6 @@ Page({
 
   toEditPage: function(e) {
     var page_url = '/pages/edit/edit';
-    // if ('index' in e.currentTarget.dataset) {
-    //   var index = parseInt(e.currentTarget.dataset.index);
-    //   var _id = this.data.matches[index]._id;
-    //   page_url += '?id=' + _id;
-    // } 
     wx.navigateTo({
       url: page_url,
     })

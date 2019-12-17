@@ -31,6 +31,8 @@ button {
 }
 
 .mycell-btn-share {
+  margin-left: 30rpx;
+  margin-bottom: 20rpx;
   color: #333;
   width: 60px;
   height: 30px;

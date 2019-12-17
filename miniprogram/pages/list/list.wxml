@@ -16,7 +16,6 @@
           <view slot="footer">{{item.time}}</view>
         </mp-cell>
         <button class="mycell-btn-share" type="primary" plain="true" open-type="share" data-index="{{index}}" catchtap="true">转发</button>
-        <text>\n</text>
       </mp-slideview>
     </mp-cells>
   </view>

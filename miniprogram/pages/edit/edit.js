@@ -240,8 +240,10 @@ Page({
         }
       })
     }
-
-    this.toListPage();
+    var that = this;
+    setTimeout(function() {
+      that.toListPage();
+    }, 2000);
   },
 
   toListPage: function() {
