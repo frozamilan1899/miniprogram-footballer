@@ -50,26 +50,59 @@ Page({
     if ('id' in options) {
       this.data.publishNewMatch = false;
       this.data.matchId = options.id;
-      // 从缓存中获取指定id的比赛信息
-      var cachedMatches = wx.getStorageSync(app.globalData.previousMatchesInfoKey);
-      for (let i = 0; i < cachedMatches.length; i++) {
-        let cachedMatch = cachedMatches[i];
-        if (this.data.matchId == cachedMatch._id) {
-          this.data.matchInfo = cachedMatch;
+      if (app.globalData.shared) {
+        // 从云数据中获取指定id的比赛信息
+        wx.showLoading({
+          title: '加载中',
+        });
+        var that = this;
+        const db = wx.cloud.database();
+        db.collection(app.globalData.dbName).where({
+          _id: this.data.matchId
+        }).get({
+          success: res => {
+            wx.hideLoading();
+            that.data.matchInfo = res.data[0];
+            if (that.data.matchInfo._openid != app.globalData.openid) {
+              that.data.publisher = false;
+              this.renderPage(that, '报名或请假', true);
+            }
+            that.data.currentLocation = that.data.matchInfo.location;
+            var markers = this.createMarkers(this.data.matchInfo.location.longitude, this.data.matchInfo.location.latitude);
+            that.data.markers = markers;
+            console.log(that.data.matchInfo);
+            that.setData({
+              matchInfo: that.data.matchInfo,
+              markers: that.data.markers
+            })
+          },
+          fail: res => {
+            wx.hideLoading();
+            console.log(res);
+          }
+        });
+      } else {
+        // 从缓存中获取指定id的比赛信息
+        var cachedMatches = wx.getStorageSync(app.globalData.previousMatchesInfoKey);
+        for (let i = 0; i < cachedMatches.length; i++) {
+          let cachedMatch = cachedMatches[i];
+          if (this.data.matchId == cachedMatch._id) {
+            this.data.matchInfo = cachedMatch;
+          }
         }
+        if (this.data.matchInfo._openid != app.globalData.openid) {
+          this.data.publisher = false;
+          this.renderPage(this, '报名/请假', true);
+        }
+        this.data.currentLocation = this.data.matchInfo.location;
+        var markers = this.createMarkers(this.data.matchInfo.location.longitude, this.data.matchInfo.location.latitude);
+        this.data.markers = markers;
+        console.log(this.data.matchInfo);
+        this.setData({
+          matchInfo: this.data.matchInfo,
+          markers: this.data.markers
+        });
       }
-      if (this.data.matchInfo._openid != app.globalData.openid) {
-        this.data.publisher = false;
-        this.renderPage(this, '报名/请假', true);
-      }
-      this.data.currentLocation = this.data.matchInfo.location;
-      var markers = this.createMarkers(this.data.matchInfo.location.longitude, this.data.matchInfo.location.latitude);
-      this.data.markers = markers;
-      console.log(this.data.matchInfo);
-      this.setData({
-        matchInfo: this.data.matchInfo,
-        markers: this.data.markers
-      });
     } else {
       this.data.publishNewMatch = true;
       //获取当前位置
