@@ -138,6 +138,7 @@ Page({
           }
         } else {
           util.showToast("暂时没有历史比赛数据");
+          _this.data.matches = matches;
         }
         _this.setData({
           matches: _this.data.matches
