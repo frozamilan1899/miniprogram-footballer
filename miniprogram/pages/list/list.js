@@ -186,26 +186,26 @@ Page({
               title: '删除中...',
             });
             // 删除所有报名信息
-            for (let i = 0; i < matchInfo.signUpList.length; i++) {
-              var signUpMap = matchInfo.signUpList[i];
-              if (signUpMap.openid == that.data.openid) {
-                matchInfo.signUpList.splice(i, 1);
+            matchInfo.signUpList.forEach(function (item, index, arr) {
+              if (item.openid === that.data.openid) {
+                arr.splice(index, 1);
               }
-            }
+            });
+
             // 删除所有请假信息
-            for (let i = 0; i < matchInfo.signUpList.length; i++) {
-              var askForLeaveMap = matchInfo.askForLeaveList[i];
-              if (askForLeaveMap.openid == that.data.openid) {
-                matchInfo.askForLeaveList.splice(i, 1);
+            matchInfo.askForLeaveList.forEach(function (item, index, arr) {
+              if (item.openid === that.data.openid) {
+                arr.splice(index, 1);
               }
-            }
+            });
+
             // 删除关联openid
-            for (let i = 0; i < matchInfo.referredOpeneIds.length; i++) {
-              var tmpOpenid = matchInfo.referredOpeneIds[i];
-              if (tmpOpenid == that.data.openid) {
-                matchInfo.referredOpeneIds.splice(i, 1);
+            matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+              if (item === that.data.openid) {
+                arr.splice(index, 1);
               }
-            }
+            });
+
             // 调用云函数
             wx.cloud.callFunction({
               name: 'update',
