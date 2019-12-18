@@ -1,11 +1,10 @@
 //list.js
-var app = getApp()
+const app = getApp();
+var util = require('../../common-js/util.js');
 
 Page({
 
   data: {
-    avatarUrl: '../../images/user-unlogin.png',
-    userInfo: {},
     openid: '',
     matches: [],
     pageLoaded: false
@@ -66,22 +65,13 @@ Page({
 
   onReachBottom: function() {
     console.log("list->onPullDownRefresh");
-    this.showToast("没有更多比赛了");
+    util.showToast("没有更多比赛了");
   },
 
   onShareAppMessage: function (option) {
     console.log(option);
-    var shareTitle;
-    var sharePath;
-    if (option.from === 'button') {
-      shareTitle = "在这里，你可以发布新的友谊赛！";
-      var index = parseInt(option.target.dataset.index);
-      var _id = this.data.matches[index]._id;
-      sharePath = "/pages/edit/edit?id=" + _id;
-    } else {
-      shareTitle = "@所有人 有新的友谊赛发布啦，快来报名！";
-      sharePath = "/pages/list/list";
-    }
+    var shareTitle = "在这里，你可以发布新的足球友谊赛！";
+    var sharePath = "/pages/list/list";
     return {
       title: shareTitle,
       imageUrl: "../../images/playground.png",
@@ -101,6 +91,7 @@ Page({
     wx.showLoading({
       title: '加载中...',
     });
+    // 如果没有指定limit，则默认且最多取20条记录
     db.collection(app.globalData.dbName).where(_.or([
       {
         _openid: _this.data.openid
@@ -108,35 +99,71 @@ Page({
       {
         referredOpeneIds: _this.data.openid
       }
-    ])).get({
+    ])).orderBy('updateTime', 'desc').get({
       success: res => {
         console.log('[数据库] [查询记录] 成功: ', res.data);
         var matches = res.data;
-        _this.data.matches = matches.sort(function (a, b) {
-          return b.updateTime - a.updateTime;
-        });
-        if (_this.data.matches.length > 0) {
+        if (matches.length > 0) {
+          _this.data.matches = matches;
+
+          // 获取比赛缓存信息
+          var cachedMatches = wx.getStorageSync(app.globalData.previousMatchesInfoKey);
+          // 对比是否有新增数据
+          if (cachedMatches && cachedMatches.length > 0) {
+            for (let i = 0; i < _this.data.matches.length; i++) {
+              var match = _this.data.matches[i];
+              var existedInCache = false;
+              for (let j = 0; j < cachedMatches.length; j++) {
+                var cachedMatch = cachedMatches[j];
+                if (match._id == cachedMatch._id) {
+                  if (match.updateTime > cachedMatch.updateTime) {
+                    _this.data.matches[i].hasNewMatchInfo = true;
+                  }
+                  existedInCache = true;
+                  break;
+                } 
+              }
+              if (!existedInCache) {
+                _this.data.matches[i].hasNewMatchInfo = true;
+              }
+            }
+          }
+          // 重新渲染区分自己创建的和别人创建的
           for (let i = 0; i < _this.data.matches.length; i++) {
             if (_this.data.matches[i]._openid != _this.data.openid) {
-              _this.data.matches[i].batStyle = "color:red";
+              _this.data.matches[i].extClass = "mycell-other";
+            } else {
+              _this.data.matches[i].extClass = "mycell";
             }
           }
         } else {
-          _this.showToast("暂时没有历史比赛数据");
+          util.showToast("暂时没有历史比赛数据");
         }
         _this.setData({
           matches: _this.data.matches
         });
         wx.hideLoading();
         wx.stopPullDownRefresh();
+
+        // 缓存比赛信息
+        wx.setStorage({
+          key: app.globalData.previousMatchesInfoKey,
+          data: _this.data.matches,
+        });
       },
       fail: err => {
         console.error('[数据库] [查询记录] 失败：', err);
-        _this.showToast("获取比赛数据失败");
+        util.showToast("获取比赛数据失败");
         wx.hideLoading();
         wx.stopPullDownRefresh();
       }
-    })
+    });
+
+    // 10秒钟后没有数据返回，关闭loading
+    setTimeout(function () {
+      wx.hideLoading();
+      wx.stopPullDownRefresh();
+    }, 10000);
   },
 
   deleteMatch: function (dataIndex) {
@@ -193,11 +220,11 @@ Page({
                 console.log('[云函数] [update]: ', res);
                 wx.hideLoading();
                 that.onQuery(that);
-                that.showToast("删除比赛成功");
+                util.showToast("删除比赛成功");
               },
               fail: function (res) {
                 wx.hideLoading();
-                that.showToast("删除比赛失败");
+                util.showToast("删除比赛失败");
               }
             });
           }
@@ -220,11 +247,11 @@ Page({
               success: res => {
                 wx.hideLoading();
                 that.onQuery(that);
-                that.showToast("删除比赛成功");
+                util.showToast("删除比赛成功");
               },
               fail: err => {
                 wx.hideLoading();
-                that.showToast("删除比赛失败");
+                util.showToast("删除比赛失败");
               }
             });
           }
@@ -238,12 +265,5 @@ Page({
     wx.navigateTo({
       url: page_url,
     })
-  },
-
-  showToast: function (content) {
-    wx.showToast({
-      icon: 'none',
-      title: content,
-    });
-  },
+  }
 })

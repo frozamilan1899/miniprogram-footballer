@@ -3,7 +3,11 @@
 <view class="container">
   <view class="page-body">
     <view class="page-section">
-      <button type="primary" bindtap="submitMatchInfo" hover-class="other-button-hover">{{publishText}}</button>
+      <view class="btns">
+        <button type="primary" bindtap="submitMatchInfo" hover-class="other-button-hover">{{publishText}}</button>
+        <text></text>
+        <button type="primary" disabled="{{publishNewMatch}}" open-type="share" hover-class="other-button-hover">转发比赛</button>
+      </view>
     </view>
     <view class="page-section">
       <text>比赛主题</text>
@@ -12,28 +16,28 @@
     <view class="page-section">
       <text>比赛时间：{{matchInfo.time}}</text>
       <picker mode="multiSelector" bindchange="bindStartMultiPickerChange" bindtap='pickerTap' bindcolumnchange="bindMultiPickerColumnChange" value="{{multiIndex}}" range="{{multiArray}}">
-        <button wx:if="{{!timeDisabled}}" type="primary" hover-class="other-button-hover"> 选择日期和时间 </button>
+        <button hidden="{{timeDisabled}}" type="primary" hover-class="other-button-hover"> 选择日期和时间 </button>
       </picker>
     </view>
     <view class="page-section">
       <text>报名列表：</text>
-      <view wx:for="{{matchInfo.signUpList}}" wx:for-item="item" data-index="{{index}}">
+      <view wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
         <text>{{index+1}}.{{item.content}}</text>
       </view>
       <input placeholder="请报名" adjust-position='true' show-confirm-bar='true' bindinput='getSUInput'></input>
     </view>
     <view class="page-section">
       <text>请假列表：</text>
-      <view wx:for="{{matchInfo.askForLeaveList}}" wx:for-item="item" data-index="{{index}}">
+      <view wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
         <text>{{index+1}}.{{item.content}}</text>
       </view>
       <input placeholder="请假" adjust-position='true' show-confirm-bar='true' bindinput='getAFLInput'></input>
     </view>
     <view class="page-section">
-      <button wx:if="{{!locationDisabled}}" type="primary" bindtap="chooseLocation" hover-class="other-button-hover"> 选取比赛位置 </button>
+      <button hidden="{{locationDisabled}}" type="primary" bindtap="chooseLocation" hover-class="other-button-hover"> 选取比赛位置 </button>
       <text>位置名称：{{matchInfo.location.name}}\n</text>
       <text>位置地址：{{matchInfo.location.address}}\n</text>
-      <map id="map" longitude="{{matchInfo.location.longitude}}" latitude="{{matchInfo.location.latitude}}" scale="14" markers="{{markers}}" show-compass="true" enable-scroll="false"></map>
+      <map id="map" longitude="{{matchInfo.location.longitude}}" latitude="{{matchInfo.location.latitude}}" scale="14" markers="{{markers}}" show-compass="true" enable-zoom="false"></map>
       <button type="primary" bindtap="openLocation" hover-class="other-button-hover"> 查看地图详情 </button>
     </view>
   </view>

@@ -23,20 +23,21 @@ button {
   background-color: blue;
 }
 
-.mycell-text {
+.mycell {
   color: #333;
-  font-size: 30rpx;
+  font-size: 28rpx;
   display: flex;
   flex-direction: row;
+  background-color: white;
 }
 
-.mycell-btn-share {
-  margin-left: 30rpx;
-  margin-bottom: 20rpx;
+.mycell-other {
   color: #333;
-  width: 60px;
-  height: 30px;
   font-size: 28rpx;
+  font-weight: bold;
+  display: flex;
+  flex-direction: row;
+  background-color: white;
 }
 
 .userInfo {
@@ -59,4 +60,15 @@ button {
   border-radius: 50%;  
   border: 2px solid #fff;  
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);  
+}
+
+.bottom-line {
+  margin-top: 20rpx;
+  margin-bottom: 20rpx;
+  color: #999;
+  font-size: 24rpx;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

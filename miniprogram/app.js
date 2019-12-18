@@ -5,6 +5,7 @@ App({
     dbName: "matches",
     openid: "",
     sceneId: "",
+    previousMatchesInfoKey: "previousMatchesInfo",
   },
 
   onLaunch: function () {
@@ -15,22 +16,22 @@ App({
       // 云开发初始化
       wx.cloud.init({
         env: "footballer-tiny-nakea",
-        traceUser: true,
-      })
+        traceUser: true
+      });
     }
 
     // 获取openid
     wx.cloud.callFunction({
       name: 'login'
     }).then(res => {
-      console.log('[云函数] [login] user openid: ', res.result.openid)
-      this.globalData.openid = res.result.openid
+      console.log('[云函数] [login] user openid: ', res.result.openid);
+      this.globalData.openid = res.result.openid;
       if (this.CallbackFn) {
-        this.CallbackFn(res.result.openid)
+        this.CallbackFn(res.result.openid);
       }
     }).catch(err => {
-      console.error(err)
-    })
+      console.error(err);
+    });
   },
 
   onShow: function (options) {

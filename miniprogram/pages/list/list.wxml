@@ -9,14 +9,23 @@
         <open-data type="userNickName"></open-data>
       </view>
     <button type="primary" size="default" hover-class="other-button-hover" bindtap="toEditPage"> 新比赛 </button>
-    <mp-cells title="近期所有参与过的比赛" footer="左滑可以删除比赛">
-      <mp-slideview buttons="{{slideButtons}}" bindbuttontap="slideButtonTap" wx:key="{{item._id}}" wx:for="{{matches}}" wx:for-item="item" data-index="{{index}}"> 
-        <mp-cell ext-class="mycell-text" link hover url="../edit/edit?id={{item._id}}">
-          <view style="{{item.batStyle}}">{{item.subject}}</view>
-          <view slot="footer">{{item.time}}</view>
+    <mp-cells title="近期参与过的所有比赛" footer="提示：左滑可以删除比赛，进入详情可以转发比赛">
+      <mp-slideview buttons="{{slideButtons}}" bindbuttontap="slideButtonTap" wx:for="{{matches}}" wx:key="key" wx:for-item="item" data-index="{{index}}"> 
+        <mp-cell ext-class="{{item.extClass}}" link hover url="../edit/edit?id={{item._id}}">
+          <image slot="icon" src="../../images/share_01.png" style="margin-right:10px;vertical-align:top;width:30px;height:30px;"></image>
+          <view>比赛主题：{{item.subject}}</view>
+          <view>比赛时间：{{item.time}}</view>
+          <view>报名人数：{{item.signUpList.length}}人</view>
+          <view>请假人数：{{item.askForLeaveList.length}}人</view>
+          <view>比赛地点：{{item.location.name}}（{{item.location.address}}）</view>
+          <view hidden="{{!item.hasNewMatchInfo}}" slot="footer">
+            <mp-badge style="margin-left:5px;margin-right:5px;" content="new"/>
+          </view>
         </mp-cell>
-        <button class="mycell-btn-share" type="primary" plain="true" open-type="share" data-index="{{index}}" catchtap="true">转发</button>
       </mp-slideview>
     </mp-cells>
+    <view class="bottom-line">
+      <view>—————— 我是有底线的 ——————</view>
+    </view>
   </view>
 </view>

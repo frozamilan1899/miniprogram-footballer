@@ -14,6 +14,19 @@
   margin-right: 10rpx;
 }
 
+.btns {
+  margin-left: 20rpx; 
+  margin-right: 20rpx; 
+  width: 96%;
+  display: table;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.btns button {
+  display: table-cell;
+}
+
 text {
   justify-content: left;
   margin-left: 20rpx;

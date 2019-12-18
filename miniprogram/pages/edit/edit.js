@@ -1,5 +1,6 @@
 //edit.js
-const app = getApp()
+const app = getApp();
+var util = require('../../common-js/util.js');
 
 Page({
   data: {
@@ -47,60 +48,67 @@ Page({
   onLoad: function(options) {
     console.log(options);
     if ('id' in options) {
-      wx.showLoading({
-        title: '加载中',
-      });
       this.data.publishNewMatch = false;
       this.data.matchId = options.id;
-      var that = this;
-      const db = wx.cloud.database();
-      db.collection(app.globalData.dbName).where({
-        _id: options.id
-      }).get({
-        success: res => {
-          wx.hideLoading();
-          that.data.matchInfo = res.data[0];
-          if (that.data.matchInfo._openid != app.globalData.openid) {
-            that.data.publisher = false;
-            this.renderPage(that, '报名或请假', true);
-          }
-          that.data.currentLocation = that.data.matchInfo.location;
-          var markers = [{
-            iconPath: "../../images/marker_01.png",
-            id: 0,
-            latitude: that.data.matchInfo.location.latitude,
-            longitude: that.data.matchInfo.location.longitude,
-            width: 16.67,
-            height: 26.67
-          }];
-          that.data.markers = markers;
-          console.log(that.data.matchInfo);
-          that.setData({
-            matchInfo: that.data.matchInfo,
-            markers: that.data.markers
-          })
-        },
-        fail: res => {
-          wx.hideLoading();
-          console.log(res);
+      // 从缓存中获取指定id的比赛信息
+      var cachedMatches = wx.getStorageSync(app.globalData.previousMatchesInfoKey);
+      for (let i = 0; i < cachedMatches.length; i++) {
+        let cachedMatch = cachedMatches[i];
+        if (this.data.matchId == cachedMatch._id) {
+          this.data.matchInfo = cachedMatch;
         }
-      })
+      }
+      if (this.data.matchInfo._openid != app.globalData.openid) {
+        this.data.publisher = false;
+        this.renderPage(this, '报名/请假', true);
+      }
+      this.data.currentLocation = this.data.matchInfo.location;
+      var markers = this.createMarkers(this.data.matchInfo.location.longitude, this.data.matchInfo.location.latitude);
+      this.data.markers = markers;
+      console.log(this.data.matchInfo);
+      this.setData({
+        matchInfo: this.data.matchInfo,
+        markers: this.data.markers
+      });
     } else {
       this.data.publishNewMatch = true;
       //获取当前位置
       this.getLocation();
     }
-  },
 
-  onShow: function() {
-    this.renderPage(this, '报名或请假', true);
+    // 这是胶囊按键里的“转发”按钮是否可以显示
+    if (this.data.publishNewMatch) {
+      wx.hideShareMenu({});
+    } else {
+      wx.showShareMenu({
+        withShareTicket: true
+      });
+    }
+    // 设置转发比赛按钮是否可以操作
     this.setData({
-      matchInfo: this.data.matchInfo
-    })
+      publishNewMatch: this.data.publishNewMatch
+    });
   },
 
   onUnload: function() {
     this.renderPage(this, '发布比赛', false);
+  },
+
+  onShareAppMessage: function (option) {
+    console.log(option);
+    var shareTitle = "@所有人 有新的足球友谊赛发布啦，快来报名！";
+    var sharePath = "/pages/edit/edit?id=" + this.data.matchId;  
+    return {
+      title: shareTitle,
+      imageUrl: "../../images/playground.png",
+      path: sharePath,
+      success: function (res) {
+        console.log(res);
+      },
+      fail: function (res) {
+        console.log(res);
+      }
+    }
   },
 
   renderPage: function (_this, pText, disabled) {
@@ -149,16 +157,16 @@ Page({
   submitMatchInfo: function() {
     // 必须项判空操作
     if ('' === this.data.matchInfo.subject) {
-      this.showToast("请填写比赛主题");
+      util.showToast("请填写比赛主题");
       return;
     }
     if ('' === this.data.matchInfo.time) {
-      this.showToast("请选择日期和时间");
+      util.showToast("请选择日期和时间");
       return;
     }
     if ('' === this.data.matchInfo.location.name 
       && '' === this.data.matchInfo.location.address) {
-      this.showToast("请选取比赛位置");
+      util.showToast("请选取比赛位置");
       return;
     }
 
@@ -206,13 +214,13 @@ Page({
             referredOpeneIds: that.data.matchInfo.referredOpeneIds
           },
           success: function (res) {
-            that.showToast(that.data.publishText + "成功");
+            util.showToast(that.data.publishText + "成功");
           }
         });
       } else {
         console.log("cloud update");
         if ('' === this.data.signUpMap.content && '' === this.data.askForLeaveMap.content) {
-          this.showToast("请追加报名或请假");
+          util.showToast("请追加报名或请假");
           return;
         }
         // 调用云函数
@@ -227,7 +235,7 @@ Page({
           },
           success: function(res) {
             console.log('[云函数] [update]: ', res);
-            that.showToast(that.data.publishText + "成功");
+            util.showToast(that.data.publishText + "成功");
           }
         });
       }
@@ -236,7 +244,7 @@ Page({
       db.collection(app.globalData.dbName).add({
         data: that.data.matchInfo,
         success: function (res) {
-          that.showToast(that.data.publishText + "成功");
+          util.showToast(that.data.publishText + "成功");
         }
       })
     }
@@ -259,13 +267,6 @@ Page({
     }
   },
 
-  showToast: function(content) {
-    wx.showToast({
-      icon: 'none',
-      title: content,
-    });
-  },
-
   /**
    * ================================================================
    * map相关的代码，使用页面变量pageDate
@@ -281,14 +282,7 @@ Page({
         var matchInfo = that.data.matchInfo;
         matchInfo.location = that.data.currentLocation;
         that.data.matchInfo = matchInfo;
-        var markers = [{
-          iconPath: "../../images/marker_01.png",
-          id: 0,
-          latitude: that.data.currentLocation.latitude,
-          longitude: that.data.currentLocation.longitude,
-          width: 16.67,
-          height: 26.67
-        }];
+        var markers = that.createMarkers(that.data.currentLocation.longitude, that.data.currentLocation.latitude);
         that.data.markers = markers;
         that.setData({
           matchInfo: matchInfo,
@@ -318,14 +312,7 @@ Page({
         var matchInfo = that.data.matchInfo;
         matchInfo.location = that.data.currentLocation;
         that.data.matchInfo = matchInfo;
-        var markers = [{
-          iconPath: "../../images/marker_01.png",
-          id: 0,
-          latitude: that.data.currentLocation.latitude,
-          longitude: that.data.currentLocation.longitude,
-          width: 16.67,
-          height: 26.67
-        }];
+        var markers = that.createMarkers(that.data.currentLocation.longitude, that.data.currentLocation.latitude);
         that.data.markers = markers;
         that.setData({
           matchInfo: matchInfo,
@@ -333,6 +320,18 @@ Page({
         });
       },
     })
+  },
+
+  createMarkers: function(longitude, latitude) {
+    var markers = [{
+      iconPath: "../../images/marker_01.png",
+      id: 0,
+      latitude: latitude,
+      longitude: longitude,
+      width: 19,
+      height: 24
+    }];
+    return markers;
   },
 
   /**
@@ -343,20 +342,6 @@ Page({
   pickerTap: function () {
     
     var date = new Date();
-    // if (this.data.matchInfo.time != '请选择日期和时间') {
-    //   console.log(this.data.matchInfo.time);
-    //   var components = this.data.matchInfo.time.split('/');
-    //   var monthDay = components[0];
-    //   var tmpcomponets = monthDay.split('-');
-    //   var month = tmpcomponets[0];
-    //   var day = tmpcomponets[1];
-    //   var value = components[1];
-    //   components = value.split(':');
-    //   var hour = components[0];
-    //   var minute = components[1];
-    //   date = new Date(date.getFullYear(), month-1, day, hour, minute, 0);
-    //   console.log(date);
-    // } 
     this.data.pageDate = date;
   
     var monthDay = [];
@@ -416,7 +401,6 @@ Page({
 
   bindMultiPickerColumnChange: function (e) {
     
-    var date = this.data.pageDate;
     var hours = [];
     var minute = [];
     var data = {
