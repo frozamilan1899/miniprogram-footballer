@@ -47,5 +47,10 @@ App({
   onShow: function (options) {
     let option = JSON.stringify(options);
     console.log('app onShow option-----' + option);
+    this.globalData.sceneId = options.scene;
+    //从转发场景进入
+    if (-1 != this.globalData.sceneIdList.indexOf(this.globalData.sceneId)) {
+      this.globalData.shared = true;
+    }
   },
 })

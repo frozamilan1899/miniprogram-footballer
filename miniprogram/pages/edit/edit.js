@@ -65,10 +65,10 @@ Page({
             that.data.matchInfo = res.data[0];
             if (that.data.matchInfo._openid != app.globalData.openid) {
               that.data.publisher = false;
-              this.renderPage(that, '报名或请假', true);
+              that.renderPage(that, '报名/请假', true);
             }
             that.data.currentLocation = that.data.matchInfo.location;
-            var markers = this.createMarkers(this.data.matchInfo.location.longitude, this.data.matchInfo.location.latitude);
+            var markers = that.createMarkers(that.data.matchInfo.location);
             that.data.markers = markers;
             console.log(that.data.matchInfo);
             that.setData({
@@ -95,7 +95,7 @@ Page({
           this.renderPage(this, '报名/请假', true);
         }
         this.data.currentLocation = this.data.matchInfo.location;
-        var markers = this.createMarkers(this.data.matchInfo.location.longitude, this.data.matchInfo.location.latitude);
+        var markers = this.createMarkers(this.data.matchInfo.location);
         this.data.markers = markers;
         console.log(this.data.matchInfo);
         this.setData({
@@ -315,7 +315,7 @@ Page({
         var matchInfo = that.data.matchInfo;
         matchInfo.location = that.data.currentLocation;
         that.data.matchInfo = matchInfo;
-        var markers = that.createMarkers(that.data.currentLocation.longitude, that.data.currentLocation.latitude);
+        var markers = that.createMarkers(that.data.currentLocation);
         that.data.markers = markers;
         that.setData({
           matchInfo: matchInfo,
@@ -345,7 +345,7 @@ Page({
         var matchInfo = that.data.matchInfo;
         matchInfo.location = that.data.currentLocation;
         that.data.matchInfo = matchInfo;
-        var markers = that.createMarkers(that.data.currentLocation.longitude, that.data.currentLocation.latitude);
+        var markers = that.createMarkers(that.data.currentLocation);
         that.data.markers = markers;
         that.setData({
           matchInfo: matchInfo,
@@ -355,12 +355,12 @@ Page({
     })
   },
 
-  createMarkers: function(longitude, latitude) {
+  createMarkers: function(location) {
     var markers = [{
       iconPath: "../../images/marker_01.png",
       id: 0,
-      latitude: latitude,
-      longitude: longitude,
+      latitude: location.latitude,
+      longitude: location.longitude,
       width: 19,
       height: 24
     }];
