@@ -289,14 +289,24 @@ Page({
 
   toListPage: function() {
     if(this.data.publisher) {
+      var pages = getCurrentPages();
+      var previousPage;
+      if (pages.length >= 2) {
+        previousPage = pages[pages.length - 2];
+      }
       wx.navigateBack({
         delta: 1,
-      })
+        success: function() {
+          if (previousPage) {
+            previousPage.onQuery(previousPage);
+          }
+        }
+      });
     } else {
       var page_url = '/pages/list/list';
       wx.redirectTo({
         url: page_url,
-      })
+      });
     }
   },
 

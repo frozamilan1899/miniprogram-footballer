@@ -53,9 +53,6 @@ Page({
 
   onShow: function() {
     console.log("list->onShow");
-    if (this.data.pageLoaded) {
-      this.onQuery(this);
-    }
   },
 
   onPullDownRefresh: function() {
@@ -64,8 +61,8 @@ Page({
   },
 
   onReachBottom: function() {
-    console.log("list->onPullDownRefresh");
-    util.showToast("没有更多比赛了");
+    console.log("list->onReachBottom");
+    // util.showToast("没有更多比赛了");
   },
 
   onShareAppMessage: function (option) {

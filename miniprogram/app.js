@@ -6,6 +6,7 @@ App({
     openid: "",
     sceneId: "",
     previousMatchesInfoKey: "previousMatchesInfo",
+    newsInfoKey: "newsInfo",
     sceneIdList: [1007, 1008],
     shared: false
   },

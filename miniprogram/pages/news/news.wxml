@@ -1,0 +1,16 @@
+<!--news.wxml-->
+
+<view class="container">
+  <view class="page-body">
+    <mp-cells title="" footer="">
+      <mp-cell ext-class="mycell" link hover url="../detail/detail?index={{index}}" wx:for="{{news}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
+          <image class="mycell-img" slot="icon" src="{{item.picUrl}}"></image>
+          <view class="mycell-title">{{item.title}}</view>
+          <view class="mycell-desc-time">{{item.description}} {{item.ctime}}</view>
+      </mp-cell>
+    </mp-cells>
+    <view class="bottom-line">
+      <view>—————— 没有更多新闻了 ——————</view>
+    </view>
+  </view>
+</view>
