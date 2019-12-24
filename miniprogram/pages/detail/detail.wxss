@@ -1,8 +1,17 @@
 /* detail.wxss */
+@import "../../thirdparty/towxml/style/main.wxss";
+@import "../../thirdparty/towxml/style/theme/light.wxss";
+@import "../../thirdparty/towxml/style/theme/dark.wxss";
+
+page {
+  background: white;
+}
+
 .page-body {
-  background: #f6f6f6;
+  background: white;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   width: 100%;
 }
+

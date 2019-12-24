@@ -9,25 +9,31 @@
 
 .mycell {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   background-color: white;
 }
 
 .mycell-img {
   margin-right:10px;
-  vertical-align:top;
-  width:130px;
-  height:91px;
+  vertical-align:center;
+  width:200px;
+  height:140px;
 }
 
 .mycell-title {
   color: #333;
   font-size: 30rpx;
+  display: flex;
+  justify-content: left;
+  align-items: left;
 }
 
 .mycell-desc-time {
   color: #B5B5B5;
   font-size: 24rpx;
+  display: flex;
+  justify-content: left;
+  align-items: left;
   margin-top: 20rpx;
 }
 

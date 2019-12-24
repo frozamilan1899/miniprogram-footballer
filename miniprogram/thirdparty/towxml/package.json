@@ -1,0 +1,54 @@
+{
+  "_from": "towxml",
+  "_id": "towxml@2.1.4",
+  "_inBundle": false,
+  "_integrity": "sha1-ZbAsM42K9QF3+Copy8l0MTZD90s=",
+  "_location": "/towxml",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "towxml",
+    "name": "towxml",
+    "escapedName": "towxml",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npm.taobao.org/towxml/download/towxml-2.1.4.tgz",
+  "_shasum": "65b02c338d8af50177f82a29cbc974313643f74b",
+  "_spec": "towxml",
+  "_where": "D:\\WeChatWorkspace\\Footballer\\miniprogram",
+  "author": {
+    "name": "单炒饭"
+  },
+  "bugs": {
+    "url": "https://github.com/sbfkcel/towxml/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "HTML、Markdown转WXML(WeiXin Markup Language)渲染库",
+  "homepage": "https://github.com/sbfkcel/towxml#readme",
+  "keywords": [
+    "html to wxml",
+    "markdown to wxml",
+    "html2wxml",
+    "mark2wxml",
+    "wxml"
+  ],
+  "license": "MIT",
+  "main": "main.js",
+  "name": "towxml",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sbfkcel/towxml.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "2.1.4"
+}

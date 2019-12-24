@@ -1,13 +1,22 @@
 // detail.js
 const app = getApp();
 var util = require('../../common-js/util.js');
+const Towxml = require('../../thirdparty/towxml/main');
 
 Page({
 
   data: {
     news: {},
-    url: ""
+    url: "",
+    pageTitle: "",
+    pageDescription: "",
+    firstTitle: "",
+    secondTitle: "",
+    thirdTitle: "",
+    paragraph: "",
   },
+
+  towxml: new Towxml(), 
 
   onLoad: function (options) {
     console.log(options);
@@ -23,9 +32,23 @@ Page({
       console.log(this.data.news);
       // 加载web-view
       this.data.url = this.data.news.url;
-      this.setData({
-        url: this.data.news
-      });
+      console.log(this.data.url);
+      // this.setData({
+      //   url: this.data.url
+      // });
+      var that = this;
+      wx.request({
+        url: this.data.url,
+        success: function(res) {
+          let data = that.towxml.toJson(res.data, 'html');
+          console.log(data.child);
+          that.setData({
+            article: data,
+            isloading: true
+          });
+        }
+      })
+
     } else {
       // 隐藏胶囊按键里的“转发”按钮
       wx.hideShareMenu({});

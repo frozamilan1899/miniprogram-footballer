@@ -1,7 +1,27 @@
 <!--detail.wxml-->
 
-<view class="container">
+<!-- <view class="container">
   <view class="page-body">
     <web-view src="{{url}}"></web-view>
+    <view class="page__hd">
+        <view class="page__title">{{pageTitle}}</view>
+        <view class="page__desc">{{pageDescription}}</view>
+    </view>
+    <view class="page__bd">
+        <view class="weui-article">
+            <view class="weui-article__h1">{{firstTitle}}</view>
+            <view class="weui-article__section">
+                <view class="weui-article__h2">{{secondTitle}}</view>
+                <view class="weui-article__section">
+                    <view class="weui-article__h3">{{thirdTitle}}</view>
+                    <view class="weui-article__p">{{paragraph}}</view>
+                </view>
+            </view>
+        </view>
+    </view>
   </view>
-</view>
+</view> 
+-->
+
+<import src="../../thirdparty/towxml/entry.wxml"/>
+<template is="entry" data="{{...article}}"/>
