@@ -58,7 +58,7 @@ Page({
         var that = this;
         const db = wx.cloud.database();
         db.collection(app.globalData.dbName).where({
-          _id: this.data.matchId
+          _id: that.data.matchId
         }).get({
           success: res => {
             wx.hideLoading();
@@ -79,6 +79,13 @@ Page({
           fail: res => {
             wx.hideLoading();
             console.log(res);
+            that.data.matchInfo.location = that.data.currentLocation;
+            var markers = that.createMarkers(that.data.currentLocation);
+            that.data.markers = markers;
+            that.setData({
+              matchInfo: that.data.matchInfo,
+              markers: that.data.markers
+            })
           }
         });
       } else {
@@ -213,9 +220,12 @@ Page({
     var that = this;
     if (!this.data.publishNewMatch) {
       console.log("update match info");
+      // 判断报名和请假信息的合法性
       var existedInList = false;
-      for (var signUpMap in this.data.matchInfo.signUpList) {
-        if (this.data.signUpMap.openid == signUpMap.openid && this.data.signUpMap.content == signUpMap.content) {
+      for (let index = 0; index < this.data.matchInfo.signUpList.length; index++) {
+        let signUpMap = this.data.matchInfo.signUpList[index];
+        if (this.data.signUpMap.openid == signUpMap.openid 
+        && this.data.signUpMap.content == signUpMap.content) {
           existedInList = true;
           break;
         }
@@ -224,8 +234,10 @@ Page({
         this.data.matchInfo.signUpList.push(this.data.signUpMap);
       }
       existedInList = false;
-      for (var askForLeaveMap in this.data.matchInfo.askForLeaveList) {
-        if (this.data.askForLeaveMap.openid == askForLeaveMap.openid && this.data.askForLeaveMap.content == askForLeaveMap.content) {
+      for (let index = 0; index < this.data.matchInfo.askForLeaveList.length; index++) {
+        let askForLeaveMap = this.data.matchInfo.askForLeaveList[index];
+        if (this.data.askForLeaveMap.openid == askForLeaveMap.openid 
+        && this.data.askForLeaveMap.content == askForLeaveMap.content) {
           existedInList = true;
           break;
         }
@@ -256,7 +268,7 @@ Page({
           util.showToast("请追加报名或请假");
           return;
         }
-        // 调用云函数
+        // 调用云函数更新
         wx.cloud.callFunction({
           name: 'update',
           data: {
@@ -281,6 +293,8 @@ Page({
         }
       })
     }
+
+    // 延迟跳转回首页
     var that = this;
     setTimeout(function() {
       that.toListPage();
@@ -289,10 +303,13 @@ Page({
 
   toListPage: function() {
     if(this.data.publisher) {
+      console.log('test publisher else');
       var pages = getCurrentPages();
       var previousPage;
       if (pages.length >= 2) {
         previousPage = pages[pages.length - 2];
+      } else {
+        previousPage = pages[pages.length - 1];
       }
       wx.navigateBack({
         delta: 1,
@@ -303,8 +320,9 @@ Page({
         }
       });
     } else {
+      console.log('test publisher else');
       var page_url = '/pages/list/list';
-      wx.redirectTo({
+      wx.switchTab({
         url: page_url,
       });
     }
@@ -312,7 +330,7 @@ Page({
 
   /**
    * ================================================================
-   * map相关的代码，使用页面变量pageDate
+   * map相关的代码，使用页面变量currentLocation
    * ================================================================
    */
   getLocation: function(e) {
@@ -332,6 +350,16 @@ Page({
           markers: that.data.markers
         });
       },
+      fail: function(res) {
+        console.log(res);
+        that.data.matchInfo.location = that.data.currentLocation;
+        var markers = that.createMarkers(that.data.currentLocation);
+        that.data.markers = markers;
+        that.setData({
+          matchInfo: matchInfo,
+          markers: that.data.markers
+        });
+      }
     })
   },
 
@@ -362,6 +390,9 @@ Page({
           markers: that.data.markers
         });
       },
+      fail: function (res) {
+        console.log(res);
+      }
     })
   },
 

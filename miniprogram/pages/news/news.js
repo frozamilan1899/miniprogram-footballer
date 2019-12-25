@@ -72,6 +72,12 @@ Page({
         wx.stopPullDownRefresh();
       }
     });
+
+    // 10秒钟后没有数据返回，关闭loading
+    setTimeout(function () {
+      wx.hideLoading();
+      wx.stopPullDownRefresh();
+    }, 10000);
   }, 
 
   itemClick: function(e) {

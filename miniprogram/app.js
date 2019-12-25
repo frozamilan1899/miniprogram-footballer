@@ -7,14 +7,22 @@ App({
     sceneId: "",
     previousMatchesInfoKey: "previousMatchesInfo",
     newsInfoKey: "newsInfo",
-    sceneIdList: [1007, 1008],
+    sceneIdList: [1007, 1008, 1017, 1037, 1038, 1044, 1064],
     shared: false
   },
 
   onLaunch: function (options) {
-    
+    let option = JSON.stringify(options);
+    console.log('app onLaunch option-----' + option);
+    this.globalData.sceneId = options.scene;
+    this.onJudgeEntryScene();
+
     if (!wx.cloud) {
       console.error('请使用 2.2.3 或以上的基础库以使用云能力');
+      wx.showModal({
+        title: '提示',
+        content: '基础库2.2.3版本以上才能使用云能力，请升级微信客户端至',
+      })
     } else {
       // 云开发初始化
       wx.cloud.init({
@@ -35,23 +43,21 @@ App({
     }).catch(err => {
       console.error(err);
     });
-
-    let option = JSON.stringify(options);
-    console.log('app onLaunch option-----' + option);
-    this.globalData.sceneId = options.scene;
-    //从转发场景进入
-    if (-1 != this.globalData.sceneIdList.indexOf(this.globalData.sceneId)) {
-      this.globalData.shared = true;
-    }
   },
 
   onShow: function (options) {
     let option = JSON.stringify(options);
     console.log('app onShow option-----' + option);
     this.globalData.sceneId = options.scene;
-    //从转发场景进入
+    this.onJudgeEntryScene();
+  },
+
+  onJudgeEntryScene: function() {
+    //从转发场景进入, sceneIdList包含所有转发场景值
     if (-1 != this.globalData.sceneIdList.indexOf(this.globalData.sceneId)) {
       this.globalData.shared = true;
+    } else {
+      this.globalData.shared = false;
     }
-  },
+  }
 })

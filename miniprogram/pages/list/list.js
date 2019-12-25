@@ -102,7 +102,6 @@ Page({
         var matches = res.data;
         if (matches.length > 0) {
           _this.data.matches = matches;
-
           // 获取比赛缓存信息
           var cachedMatches = wx.getStorageSync(app.globalData.previousMatchesInfoKey);
           // 对比是否有新增数据
@@ -189,14 +188,12 @@ Page({
                 arr.splice(index, 1);
               }
             });
-
             // 删除所有请假信息
             matchInfo.askForLeaveList.forEach(function (item, index, arr) {
               if (item.openid === that.data.openid) {
                 arr.splice(index, 1);
               }
             });
-
             // 删除关联openid
             matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
               if (item === that.data.openid) {
@@ -204,7 +201,7 @@ Page({
               }
             });
 
-            // 调用云函数
+            // 调用云函数更新
             wx.cloud.callFunction({
               name: 'update',
               data: {
@@ -218,11 +215,11 @@ Page({
                 console.log('[云函数] [update]: ', res);
                 wx.hideLoading();
                 that.onQuery(that);
-                util.showToast("删除比赛成功");
+                util.showToast("删除比赛数据成功");
               },
               fail: function (res) {
                 wx.hideLoading();
-                util.showToast("删除比赛失败");
+                util.showToast("删除比赛数据失败");
               }
             });
           }
