@@ -302,28 +302,30 @@ Page({
   },
 
   toListPage: function() {
+    var page_url = '/pages/list/list';
     if(this.data.publisher) {
-      console.log('test publisher else');
       var pages = getCurrentPages();
-      var previousPage;
       if (pages.length >= 2) {
-        previousPage = pages[pages.length - 2];
-      } else {
-        previousPage = pages[pages.length - 1];
-      }
-      wx.navigateBack({
-        delta: 1,
-        success: function() {
-          if (previousPage) {
-            previousPage.onQuery(previousPage);
+        // 本人小程序内跳转到首页
+        var previousPage = pages[pages.length - 2];
+        wx.navigateBack({
+          delta: 1,
+          success: function () {
+            if (previousPage) {
+              previousPage.onQuery(previousPage);
+            }
           }
-        }
-      });
+        });
+      } else {
+        // 本人从卡片跳转到首页
+        wx.switchTab({
+          url: page_url
+        });
+      }
     } else {
-      console.log('test publisher else');
-      var page_url = '/pages/list/list';
+      // 非本人从卡片跳转到首页
       wx.switchTab({
-        url: page_url,
+        url: page_url
       });
     }
   },

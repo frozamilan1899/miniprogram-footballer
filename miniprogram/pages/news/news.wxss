@@ -9,12 +9,12 @@
 
 .mycell {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   background-color: white;
 }
 
 .mycell-img {
-  margin-right:10px;
+  margin-right:20rpx;
   vertical-align:center;
   width:200px;
   height:140px;
@@ -28,13 +28,22 @@
   align-items: left;
 }
 
-.mycell-desc-time {
+.mycell-desc {
   color: #B5B5B5;
   font-size: 24rpx;
   display: flex;
   justify-content: left;
   align-items: left;
   margin-top: 20rpx;
+}
+
+.mycell-time {
+  color: #B5B5B5;
+  font-size: 24rpx;
+  display: flex;
+  justify-content: left;
+  align-items: left;
+  margin-top: 5rpx;
 }
 
 .bottom-line {

@@ -11,7 +11,8 @@
       <mp-cell ext-class="mycell" hover catchtap="itemClick" wx:for="{{news}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
           <image class="mycell-img" slot="icon" src="{{item.picUrl}}"></image>
           <rich-text class="mycell-title" nodes="{{item.title}}"></rich-text>
-          <view class="mycell-desc-time">{{item.description}}  {{item.ctime}}</view>
+          <view class="mycell-desc">{{item.description}}</view>
+          <view class="mycell-time">{{item.ctime}}</view>
       </mp-cell>
     </mp-cells>
     <view class="bottom-line">

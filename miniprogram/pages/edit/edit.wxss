@@ -12,6 +12,7 @@
   width: 97%;
   margin-left: 10rpx;
   margin-right: 10rpx;
+  margin-bottom: 10rpx;
 }
 
 .btns {
@@ -28,6 +29,7 @@
 }
 
 text {
+  color: #333;
   justify-content: left;
   margin-left: 20rpx;
   font-size: 30rpx;
@@ -51,7 +53,7 @@ input {
   padding: 10rpx;
   background-color: white;
   width: 93%;
-  height: 30rpx;
+  height: 60rpx;
   border-radius: 5px;
   color: #333;
 }
