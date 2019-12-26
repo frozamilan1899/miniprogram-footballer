@@ -56,7 +56,7 @@ Page({
           title: '加载中',
         });
         var that = this;
-        const db = wx.cloud.database();
+        const db = app.globalData.db;
         db.collection(app.globalData.dbName).where({
           _id: that.data.matchId
         }).get({
@@ -211,7 +211,7 @@ Page({
     }
 
     // 比赛信息发布或者追加
-    const db = wx.cloud.database();
+    const db = app.globalData.db;
     var updateTime = new Date().getTime();
     this.data.matchInfo.updateTime = updateTime;
     if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
@@ -220,30 +220,41 @@ Page({
     var that = this;
     if (!this.data.publishNewMatch) {
       console.log("update match info");
-      // 判断报名和请假信息的合法性
-      var existedInList = false;
-      for (let index = 0; index < this.data.matchInfo.signUpList.length; index++) {
-        let signUpMap = this.data.matchInfo.signUpList[index];
-        if (this.data.signUpMap.openid == signUpMap.openid 
-        && this.data.signUpMap.content == signUpMap.content) {
-          existedInList = true;
-          break;
+      // 判断报名信息的合法性
+      var existedInSUL = false;
+      if (this.data.signUpMap.content != '') {
+        for (let index = 0; index < this.data.matchInfo.signUpList.length; index++) {
+          let signUpMap = this.data.matchInfo.signUpList[index];
+          if (this.data.signUpMap.openid == signUpMap.openid
+            && this.data.signUpMap.content == signUpMap.content) {
+            existedInSUL = true;
+            break;
+          }
+        }
+        if (existedInSUL) {
+          util.showToast(this.data.signUpMap.content + "已报名");
+          return;
+        } else {
+          this.data.matchInfo.signUpList.push(this.data.signUpMap);
         }
       }
-      if (!existedInList && this.data.signUpMap.content != '') {
-        this.data.matchInfo.signUpList.push(this.data.signUpMap);
-      }
-      existedInList = false;
-      for (let index = 0; index < this.data.matchInfo.askForLeaveList.length; index++) {
-        let askForLeaveMap = this.data.matchInfo.askForLeaveList[index];
-        if (this.data.askForLeaveMap.openid == askForLeaveMap.openid 
-        && this.data.askForLeaveMap.content == askForLeaveMap.content) {
-          existedInList = true;
-          break;
+      // 判断请假信息的合法性
+      var existedInAFL = false;
+      if (this.data.askForLeaveMap.content != '') {
+        for (let index = 0; index < this.data.matchInfo.askForLeaveList.length; index++) {
+          let askForLeaveMap = this.data.matchInfo.askForLeaveList[index];
+          if (this.data.askForLeaveMap.openid == askForLeaveMap.openid
+            && this.data.askForLeaveMap.content == askForLeaveMap.content) {
+            existedInAFL = true;
+            break;
+          }
         }
-      }
-      if (!existedInList && this.data.askForLeaveMap.content != '') {
-        this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveMap);
+        if (existedInAFL) {
+          util.showToast(this.data.signUpMap.content + "已请假");
+          return;
+        } else {
+          this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveMap);
+        }
       }
       // 执行更新操作
       if (this.data.publisher) {

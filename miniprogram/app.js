@@ -2,6 +2,7 @@
 App({
 
   globalData: {
+    db: new Object(),
     dbName: "matches",
     openid: "",
     sceneId: "",
@@ -29,20 +30,23 @@ App({
         env: "footballer-tiny-nakea",
         traceUser: true
       });
-    }
+      
+      // 初始化云数据库对象
+      this.globalData.db = wx.cloud.database();
 
-    // 获取openid
-    wx.cloud.callFunction({
-      name: 'login'
-    }).then(res => {
-      console.log('[云函数] [login] user openid: ', res.result.openid);
-      this.globalData.openid = res.result.openid;
-      if (this.CallbackFn) {
-        this.CallbackFn(res.result.openid);
-      }
-    }).catch(err => {
-      console.error(err);
-    });
+      // 调用云函数获取openid
+      wx.cloud.callFunction({
+        name: 'login'
+      }).then(res => {
+        console.log('[云函数] [login] user openid: ', res.result.openid);
+        this.globalData.openid = res.result.openid;
+        if (this.CallbackFn) {
+          this.CallbackFn(res.result.openid);
+        }
+      }).catch(err => {
+        console.error(err);
+      });
+    }
   },
 
   onShow: function (options) {

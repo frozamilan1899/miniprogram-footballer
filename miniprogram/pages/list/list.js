@@ -53,6 +53,7 @@ Page({
 
   onShow: function() {
     console.log("list->onShow");
+    this.onQuery(this);
   },
 
   onPullDownRefresh: function() {
@@ -83,7 +84,7 @@ Page({
   },
 
   onQuery: function(_this) {
-    const db = wx.cloud.database();
+    const db = app.globalData.db;
     const _ = db.command;
     wx.showLoading({
       title: '加载中...',
@@ -164,7 +165,7 @@ Page({
   },
 
   deleteMatch: function (dataIndex) {
-    const db = wx.cloud.database();
+    const db = app.globalData.db;
     var matchInfo = this.data.matches[dataIndex];
     var _id = matchInfo._id;
     var _openid = matchInfo._openid;
