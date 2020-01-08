@@ -11,7 +11,7 @@
     <button type="primary" size="default" hover-class="other-button-hover" bindtap="toEditPage"> 新比赛 </button>
     <mp-cells wx:if="{{matches.length}}" title="近期参与过的所有比赛" footer="提示：左滑可以删除比赛，进入详情可以转发比赛">
       <mp-slideview buttons="{{slideButtons}}" bindbuttontap="slideButtonTap" wx:for="{{matches}}" wx:key="key" wx:for-item="item" data-index="{{index}}"> 
-        <mp-cell ext-class="{{item.extClass}}" link hover url="../edit/edit?id={{item._id}}">
+        <mp-cell wx:if="{{!item.expired}}" ext-class="{{item.extClass}}" link hover url="../edit/edit?id={{item._id}}">
           <image slot="icon" src="../../images/share_01.png" style="margin-right:10px;vertical-align:top;width:30px;height:30px;"></image>
           <view>比赛主题：{{item.subject}}</view>
           <view>比赛时间：{{item.time}}</view>
@@ -21,6 +21,13 @@
           <view hidden="{{!item.hasNewMatchInfo}}" slot="footer">
             <mp-badge style="margin-left:5px;margin-right:5px;" content="new"/>
           </view>
+        </mp-cell>
+        <mp-cell wx:else ext-class="{{item.extClass}}" hover catchtap="matchClick">
+          <view>比赛主题：{{item.subject}}</view>
+          <view>比赛时间：{{item.time}}</view>
+          <view>报名人数：{{item.signUpList.length}}人</view>
+          <view>请假人数：{{item.askForLeaveList.length}}人</view>
+          <view>比赛地点：{{item.location.name}}（{{item.location.address}}）</view>
         </mp-cell>
       </mp-slideview>
     </mp-cells>

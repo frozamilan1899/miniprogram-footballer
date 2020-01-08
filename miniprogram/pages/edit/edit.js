@@ -136,7 +136,7 @@ Page({
 
   onShareAppMessage: function (option) {
     console.log(option);
-    var shareTitle = "@所有人 有新的足球友谊赛发布啦，快来报名！";
+    var shareTitle = this.data.matchInfo.subject;
     var sharePath = "/pages/edit/edit?id=" + this.data.matchId;  
     return {
       title: shareTitle,

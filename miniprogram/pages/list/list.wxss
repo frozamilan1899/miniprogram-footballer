@@ -31,10 +31,9 @@ button {
   background-color: white;
 }
 
-.mycell-other {
-  color: #333;
+.mycell-expired {
+  color: #666;
   font-size: 28rpx;
-  font-weight: bold;
   display: flex;
   flex-direction: row;
   background-color: white;

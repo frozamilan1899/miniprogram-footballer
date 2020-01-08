@@ -53,7 +53,9 @@ Page({
 
   onShow: function() {
     console.log("list->onShow");
-    this.onQuery(this);
+    if (!this.data.pageLoaded) {
+      this.onQuery(this);
+    }
   },
 
   onPullDownRefresh: function() {
@@ -68,7 +70,7 @@ Page({
 
   onShareAppMessage: function (option) {
     console.log(option);
-    var shareTitle = "在这里，你可以发布新的足球友谊赛！";
+    var shareTitle = "足球友谊赛，等你来发布！";
     var sharePath = "/pages/list/list";
     return {
       title: shareTitle,
@@ -125,10 +127,12 @@ Page({
               }
             }
           }
-          // 重新渲染区分自己创建的和别人创建的
+          // 检查每场比赛是否已过期
+          var currentTime = new Date().getTime();
           for (let i = 0; i < _this.data.matches.length; i++) {
-            if (_this.data.matches[i]._openid != _this.data.openid) {
-              _this.data.matches[i].extClass = "mycell-other";
+            if (currentTime > util.convertDateFromString(_this.data.matches[i].time)) {
+              _this.data.matches[i].expired = true;
+              _this.data.matches[i].extClass = "mycell-expired";
             } else {
               _this.data.matches[i].extClass = "mycell";
             }
@@ -261,5 +265,9 @@ Page({
     wx.navigateTo({
       url: page_url,
     })
+  },
+
+  matchClick: function() {
+    util.showToast("比赛已过期");
   }
 })
