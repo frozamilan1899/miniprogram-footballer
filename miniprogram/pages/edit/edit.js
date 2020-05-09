@@ -1,6 +1,7 @@
 //edit.js
 const app = getApp();
 var util = require('../../common-js/util.js');
+const db = app.globalData.db;
 
 Page({
   data: {
@@ -42,7 +43,8 @@ Page({
       latitude: 34.26667,
       name: '',
       address: ''
-    }
+    },
+    expired: false
   },
 
   onLoad: function(options) {
@@ -56,7 +58,6 @@ Page({
           title: '加载中',
         });
         var that = this;
-        const db = app.globalData.db;
         db.collection(app.globalData.dbName).where({
           _id: that.data.matchId
         }).get({
@@ -66,6 +67,13 @@ Page({
             if (that.data.matchInfo._openid != app.globalData.openid) {
               that.data.publisher = false;
               that.renderPage(that, '报名/请假', true);
+            }
+            // 检查本场比赛是否已过期，若已过期将部分控件设置为不可用
+            var currentTime = new Date().getTime();
+            if (currentTime > util.convertDateFromString(that.data.matchInfo.time)) {
+              that.data.expired = true;
+              that.renderPage(that, '发布比赛', true);
+              util.showToast("比赛已过期");
             }
             that.data.currentLocation = that.data.matchInfo.location;
             var markers = that.createMarkers(that.data.matchInfo.location);
@@ -101,6 +109,12 @@ Page({
           this.data.publisher = false;
           this.renderPage(this, '报名/请假', true);
         }
+        // 检查本场比赛是否已过期，若已过期将部分控件设置为不可用
+        if (this.data.matchInfo.expired) {
+          this.data.expired = true;
+          this.renderPage(this, '发布比赛', true);
+          util.showToast("比赛已过期");
+        }
         this.data.currentLocation = this.data.matchInfo.location;
         var markers = this.createMarkers(this.data.matchInfo.location);
         this.data.markers = markers;
@@ -132,6 +146,8 @@ Page({
 
   onUnload: function() {
     this.renderPage(this, '发布比赛', false);
+    this.data.publisher = true;
+    this.data.expired = false;
   },
 
   onShareAppMessage: function (option) {
@@ -153,7 +169,7 @@ Page({
 
   renderPage: function (_this, pText, disabled) {
     // 渲染页面
-    if (!_this.data.publisher) {
+    if (!_this.data.publisher || _this.data.expired) {
       _this.data.publishText = pText;
       _this.data.subjectDisabled = disabled;
       _this.data.timeDisabled = disabled;
@@ -163,6 +179,7 @@ Page({
         subjectDisabled: _this.data.subjectDisabled,
         timeDisabled: _this.data.timeDisabled,
         locationDisabled: _this.data.locationDisabled,
+        expired: _this.data.expired
       });
     }
   },
@@ -211,7 +228,7 @@ Page({
     }
 
     // 比赛信息发布或者追加
-    const db = app.globalData.db;
+    
     var updateTime = new Date().getTime();
     this.data.matchInfo.updateTime = updateTime;
     if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {

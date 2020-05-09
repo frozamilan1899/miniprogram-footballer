@@ -1,6 +1,7 @@
 // news.js
 const app = getApp();
 var util = require('../../common-js/util.js');
+const db = app.globalData.db;
 
 Page({
 
@@ -10,7 +11,7 @@ Page({
   },
 
   onLoad: function (options) {
-    this.loadNews(this);
+    this.queryNews();
   },
 
   onShow: function () {
@@ -19,7 +20,7 @@ Page({
 
   onPullDownRefresh: function () {
     console.log("news->onPullDownRefresh");
-    this.loadNews(this);
+    this.queryNews();
   },
 
   onReachBottom: function () {
@@ -45,23 +46,18 @@ Page({
         console.log(res);
         if (res.data.code == 200) {
           _this.data.news = res.data.newslist;
-          // 替换url中的http为https
-          // var tmpList = [];
-          // for (let index = 0; index < _this.data.news.length; index++) {
-          //   var item = _this.data.news[index];
-          //   item.url = item.url.replace("http", "https");
-          //   tmpList.push(item);
-          // }
-          // _this.data.news = tmpList;
           _this.setData({
             news: _this.data.news
           });
 
-          // 缓存新闻数据
-          wx.setStorage({
-            key: app.globalData.newsInfoKey,
-            data: _this.data.news
-          })
+          // 将新闻数据缓存入云数据库
+          _this.cacheNews(_this.data.news);
+
+          // 在本地缓存新闻数据，在detail页面中使用
+          // wx.setStorage({
+          //   key: app.globalData.newsInfoKey,
+          //   data: _this.data.news
+          // });
         }
         wx.hideLoading();
         wx.stopPullDownRefresh();
@@ -98,4 +94,49 @@ Page({
       }
     })
   },
+
+  cacheNews: function(e) {
+    console.log('remove news');
+    // 调用云函数删除
+    wx.cloud.callFunction({
+      name: 'remove_news',
+      success: function (res) {
+        console.log('[云函数] [remove_news]: ', res);
+        let newsMap = {};
+        newsMap['newslist'] = e;
+        let currentTime = (new Date()).getTime();
+        newsMap['timestamp'] = currentTime;
+        console.log('add news');
+        db.collection('news').add({
+          data: newsMap
+        });
+      }
+    });
+  },
+
+  queryNews: function(e) {
+    const _ = db.command;
+    console.log('query news');
+    var that = this;
+    db.collection('news').get({
+      success: function (res) {
+        console.log(res.data);
+        if (res.data.length > 0) {
+          console.log(res.data[0].timestamp);
+          let currentTime = (new Date()).getTime();
+          let hour12Time = 12 * 60 * 60 * 1000;
+          if (currentTime - res.data[0].timestamp > hour12Time) {
+            that.loadNews(that);
+          } else {
+            that.data.news = res.data[0].newslist;
+            that.setData({
+              news: that.data.news
+            });
+          }
+        } else {
+          that.loadNews(that);
+        }
+      }
+    });
+  }
 })

@@ -1,6 +1,7 @@
 //list.js
 const app = getApp();
 var util = require('../../common-js/util.js');
+const db = app.globalData.db;
 
 Page({
 
@@ -86,7 +87,6 @@ Page({
   },
 
   onQuery: function(_this) {
-    const db = app.globalData.db;
     const _ = db.command;
     wx.showLoading({
       title: '加载中...',
@@ -169,7 +169,6 @@ Page({
   },
 
   deleteMatch: function (dataIndex) {
-    const db = app.globalData.db;
     var matchInfo = this.data.matches[dataIndex];
     var _id = matchInfo._id;
     var _openid = matchInfo._openid;
@@ -265,9 +264,5 @@ Page({
     wx.navigateTo({
       url: page_url,
     })
-  },
-
-  matchClick: function() {
-    util.showToast("比赛已过期");
   }
 })
