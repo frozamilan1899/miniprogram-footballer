@@ -25,7 +25,6 @@ Page({
 
   onReachBottom: function () {
     console.log("news->onReachBottom");
-    // util.showToast("没有更多新闻了");
   },
 
   loadNews: function(_this) {
@@ -52,18 +51,12 @@ Page({
 
           // 将新闻数据缓存入云数据库
           _this.cacheNews(_this.data.news);
-
-          // 在本地缓存新闻数据，在detail页面中使用
-          // wx.setStorage({
-          //   key: app.globalData.newsInfoKey,
-          //   data: _this.data.news
-          // });
         }
-        wx.hideLoading();
-        wx.stopPullDownRefresh();
       },
       fail(res) {
         console.log(res);
+      },
+      complete(res) {
         wx.hideLoading();
         wx.stopPullDownRefresh();
       }

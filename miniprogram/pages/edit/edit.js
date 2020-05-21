@@ -185,14 +185,14 @@ Page({
   },
 
   getSubjectInput: function(event) {
-    var inputStr = event.detail.value;
+    var inputStr = event.detail;
     if (inputStr && inputStr.length > 0) {
       this.data.matchInfo.subject = inputStr;
     }
   },
 
   getSUInput: function (event) {
-    var inputStr = event.detail.value;
+    var inputStr = event.detail;
     if (inputStr && inputStr.length > 0) {
       this.data.signUpMap = {
         openid: app.globalData.openid,
@@ -202,7 +202,7 @@ Page({
   }, 
 
   getAFLInput: function(event) {
-    var inputStr = event.detail.value;
+    var inputStr = event.detail;
     if (inputStr && inputStr.length > 0) {
       this.data.askForLeaveMap = {
         openid: app.globalData.openid,
@@ -356,6 +356,10 @@ Page({
         url: page_url
       });
     }
+  },
+
+  onClose: function(e) {
+    util.showToast('删除标签' + e.detail);
   },
 
   /**

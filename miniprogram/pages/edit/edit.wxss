@@ -6,13 +6,10 @@
   flex-direction: column;
   justify-content: flex-start;
   width: 100%;
-  padding: 20rpx;
 }
 
-.btns {
-  margin-left: 20rpx; 
-  margin-right: 20rpx; 
-  width: 96%;
+.btns { 
+  width: 100%;
   display: table;
   flex-direction: row;
   justify-content: center;
@@ -22,19 +19,15 @@
   display: table-cell;
 }
 
-text {
-  color: #333;
+.tag-list {
+  width: 100%;
+  display: table;
+  flex-direction: row;
   justify-content: left;
-  margin-left: 20rpx;
-  font-size: 30rpx;
-  background-color: #f6f6f6;
+  padding: 4rpx;
 }
 
 #map {
-  width: 95%; 
+  width: 100%; 
   height: 200px;
-  margin-top: 20rpx;
-  margin-left: 20rpx;
-  border: 1px #333 solid;
-  border-radius: 5px;
 }

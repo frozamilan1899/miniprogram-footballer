@@ -10,10 +10,11 @@ Page({
   data: {
     openid: '',
     matches: [],
-    pageLoaded: false
+    dataLoaded: false
   },
 
   onLoad: function (options) {
+    console.log('list page onLoad');
     // 显示胶囊按键里的“转发”按钮
     wx.showShareMenu({
       withShareTicket: true
@@ -21,14 +22,13 @@ Page({
 
     if (app.globalData.openid && app.globalData.openid != '') {
       this.data.openid = app.globalData.openid;
-      this.data.pageLoaded = true;
+      this.data.dataLoaded = true;
     } else {
       var that = this;
       app.CallbackFn = data => {
         console.log('CallbackFn.data-->' + data)
         that.data.openid = data;
         that.onQuery(that);
-        that.data.pageLoaded = true;
       }
     }
     
@@ -56,7 +56,7 @@ Page({
 
   onShow: function() {
     console.log("list->onShow");
-    if (!this.data.pageLoaded) {
+    if (!this.data.dataLoaded) {
       this.onQuery(this);
     }
   },
@@ -143,12 +143,10 @@ Page({
           util.showToast("暂时没有历史比赛数据");
           _this.data.matches = matches;
         }
+        _this.data.dataLoaded = true;
         _this.setData({
           matches: _this.data.matches
         });
-        wx.hideLoading();
-        wx.stopPullDownRefresh();
-
         // 缓存比赛信息
         wx.setStorage({
           key: app.globalData.previousMatchesInfoKey,
@@ -157,7 +155,9 @@ Page({
       },
       fail: err => {
         console.error('[数据库] [查询记录] 失败：', err);
-        util.showToast("获取比赛数据失败");
+        util.showToast("获取比赛数据失败");   
+      },
+      complete: res => {
         wx.hideLoading();
         wx.stopPullDownRefresh();
       }

@@ -13,6 +13,8 @@
 
     <van-button type="primary" size="large" bindclick="toEditPage"> 新比赛 </van-button>
 
+    <van-skeleton title row="3" loading="{{dataLoaded}}"/>
+
     <van-cell-group wx:if="{{matches.length}}" title="近期参与过的所有比赛">
       <van-swipe-cell right-width="{{65}}" wx:for="{{matches}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
         <van-cell center is-link="{{!item.hasNewMatchInfo}}" border clickable title="比赛主题：{{item.subject}}" use-label-slot="{{true}}" label-class="{{item.extClass}}" url="../edit/edit?id={{item._id}}">
