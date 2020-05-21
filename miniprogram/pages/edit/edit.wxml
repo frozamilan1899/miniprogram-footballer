@@ -2,44 +2,37 @@
 
 <view class="container">
   <view class="page-body">
-    <view class="page-section">
-      <view class="btns">
-        <button disabled="{{expired}}" type="primary" bindtap="submitMatchInfo" hover-class="other-button-hover">{{publishText}}</button>
-        <text></text>
-        <button disabled="{{publishNewMatch || expired}}" type="default" open-type="share" hover-class="other-button-hover">转发比赛</button>
+    <view class="btns">
+      <van-button disabled="{{expired}}" type="primary" bindtap="submitMatchInfo">{{publishText}}</van-button>
+      <text></text>
+      <van-button disabled="{{publishNewMatch || expired}}" type="default" open-type="share">转发比赛</van-button>
+    </view>
+
+    <van-field disabled="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="请输入比赛主题" autosize clearable="{{true}}" required="{{true}}" bindinput='getSubjectInput' />
+
+    <van-field disabled="{{true}}" label="比赛时间" value="{{matchInfo.time}}" required="{{true}}">
+      <view slot="button">
+        <picker mode="multiSelector" bindchange="bindStartMultiPickerChange" bindtap='pickerTap' bindcolumnchange="bindMultiPickerColumnChange" value="{{multiIndex}}" range="{{multiArray}}">
+          <van-button hidden="{{timeDisabled}}" plain hairline type="primary" size="mini"> 选择日期和时间 </van-button>
+        </picker>
       </view>
+    </van-field>
+
+    <van-field label="报名列表" hidden="{{expired}}" placeholder="请报名" bindinput='getSUInput' />
+    <view wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
+      <text>{{index+1}}.{{item.content}}</text>
     </view>
-    <view class="page-section">
-      <text>比赛主题：\n</text>
-      <text wx:if="{{subjectDisabled}}">{{matchInfo.subject}}</text>
-      <textarea wx:else placeholder="请填写比赛主题" data-show="yes" maxlength='-1' show-confirm-bar='true' adjust-position='true' bindinput='getSubjectInput' value="{{matchInfo.subject}}"></textarea>
+
+
+    <van-field label="请假列表" hidden="{{expired}}" placeholder="请假" bindinput='getAFLInput' />
+    <view wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
+      <text>{{index+1}}.{{item.content}}</text>
     </view>
-    <view class="page-section">
-      <text>比赛时间：{{matchInfo.time}}</text>
-      <picker mode="multiSelector" bindchange="bindStartMultiPickerChange" bindtap='pickerTap' bindcolumnchange="bindMultiPickerColumnChange" value="{{multiIndex}}" range="{{multiArray}}">
-        <button hidden="{{timeDisabled}}" type="primary" hover-class="other-button-hover"> 选择日期和时间 </button>
-      </picker>
-    </view>
-    <view class="page-section">
-      <text>报名列表：</text>
-      <view wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
-        <text>{{index+1}}.{{item.content}}</text>
-      </view>
-      <input hidden="{{expired}}" placeholder="请报名（张三、李四、王五、赵六）" adjust-position='true' show-confirm-bar='true' bindinput='getSUInput'></input>
-    </view>
-    <view class="page-section">
-      <text>请假列表：</text>
-      <view wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
-        <text>{{index+1}}.{{item.content}}</text>
-      </view>
-      <input hidden="{{expired}}" placeholder="请假（张三、李四、王五、赵六）" adjust-position='true' show-confirm-bar='true' bindinput='getAFLInput'></input>
-    </view>
-    <view class="page-section">
-      <button hidden="{{locationDisabled}}" type="primary" bindtap="chooseLocation" hover-class="other-button-hover"> 选取比赛位置 </button>
-      <text>场地名称：{{matchInfo.location.name}}\n</text>
-      <text>场地地址：{{matchInfo.location.address}}\n</text>
-      <map id="map" longitude="{{matchInfo.location.longitude}}" latitude="{{matchInfo.location.latitude}}" scale="14" markers="{{markers}}" show-compass="true" enable-zoom="false"></map>
-      <button type="primary" bindtap="openLocation" hover-class="other-button-hover"> 查看位置详情 </button>
-    </view>
+
+    <van-button hidden="{{locationDisabled}}" type="primary" bindtap="chooseLocation" size="large">选取比赛位置</van-button>
+    <text>场地名称：{{matchInfo.location.name}}\n</text>
+    <text>场地地址：{{matchInfo.location.address}}\n</text>
+    <map id="map" longitude="{{matchInfo.location.longitude}}" latitude="{{matchInfo.location.latitude}}" scale="14" markers="{{markers}}" show-compass="true" enable-zoom="false"></map>
+    <van-button type="primary" bindtap="openLocation" size="large">查看位置详情</van-button>
   </view>
 </view>

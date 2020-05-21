@@ -80,13 +80,11 @@ Page({
     console.log(e);
     var index = parseInt(e.currentTarget.dataset.index);
     var paster = this.data.news[index].url;
-    var that = this;
     wx.setClipboardData({
       data: paster,
       success: function() {
         wx.showModal({
-          title: '提示',
-          content: '已将链接地址复制到剪贴板：\r\n' + paster + '\r\n可在其他浏览器内打开查看',
+          content: '已将链接地址复制到剪贴板：\r\n' + paster + '\r\n请在其他浏览器内打开查看',
           cancelText: '好的',
           confirmText: '知道了',
           success(res) {}

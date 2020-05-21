@@ -2,22 +2,17 @@
 
 <view class="container">
   <view class="page-body">
-    <mp-cells wx:if="{{news.length}}" title="" footer="">
-      <!-- <mp-cell ext-class="mycell" link hover url="../detail/detail?index={{index}}" wx:for="{{news}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
-          <image class="mycell-img" slot="icon" src="{{item.picUrl}}"></image>
-          <rich-text class="mycell-title" nodes="{{item.title}}"></rich-text>
-          <view class="mycell-desc-time">{{item.description}}  {{item.ctime}}</view>
-      </mp-cell> -->
-      <mp-cell ext-class="mycell" hover catchtap="itemClick" wx:for="{{news}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
+    <van-cell-group wx:if="{{news.length}}" wx:for="{{news}}" wx:key="key" wx:for-item="item">
+      <van-cell border clickable use-label-slot="{{true}}" bindclick="itemClick" data-index="{{index}}">
+        <view slot="label">
           <image class="mycell-img" slot="icon" src="{{item.picUrl}}"></image>
           <rich-text class="mycell-title" nodes="{{item.title}}"></rich-text>
           <view class="mycell-desc">{{item.description}}</view>
           <view class="mycell-time">{{item.ctime}}</view>
-      </mp-cell>
-    </mp-cells>
-    <view class="bottom-line">
-      <view wx:if="{{news.length}}">—————— 没有更多新闻了 ——————</view>
-      <view wx:else>—————— 暂时没有新闻数据 ——————</view>
-    </view>
+        </view>
+      </van-cell>
+    </van-cell-group>
+    <van-divider wx:if="{{news.length}}" contentPosition="center">没有更多新闻了</van-divider>
+    <van-divider wx:else contentPosition="center">暂时没有新闻数据</van-divider>
   </view>
 </view>

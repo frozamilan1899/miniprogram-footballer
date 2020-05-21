@@ -1,10 +1,13 @@
 {
   "navigationBarTitleText": "Footballer",
   "usingComponents": {
-    "mp-cells": "../../miniprogram_npm/weui-miniprogram/cells/cells",
-    "mp-cell": "../../miniprogram_npm/weui-miniprogram/cell/cell",
-    "mp-slideview": "../../miniprogram_npm/weui-miniprogram/slideview/slideview",
-    "mp-badge": "../../miniprogram_npm/weui-miniprogram/badge/badge"
+    "van-button": "@vant/weapp/button/index",
+    "van-cell": "@vant/weapp/cell/index",
+    "van-cell-group": "@vant/weapp/cell-group/index",
+    "van-swipe-cell": "@vant/weapp/swipe-cell/index",
+    "van-tag": "@vant/weapp/tag/index",
+    "van-divider": "@vant/weapp/divider/index",
+    "van-notify": "@vant/weapp/notify/index"
   },
   "enablePullDownRefresh": true
 }

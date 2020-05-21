@@ -8,37 +8,6 @@
   width: 100%;
 }
 
-.page-section {
-  width: 97%;
-  margin-left: 10rpx;
-  margin-right: 10rpx;
-}
-
-button {
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
-.other-button-hover {
-  background-color: blue;
-}
-
-.mycell {
-  color: #333;
-  font-size: 28rpx;
-  display: flex;
-  flex-direction: row;
-  background-color: white;
-}
-
-.mycell-expired {
-  color: #666;
-  font-size: 28rpx;
-  display: flex;
-  flex-direction: row;
-  background-color: white;
-}
-
 .userInfo {
   position: relative;  
   width: 750rpx;  
@@ -61,13 +30,19 @@ button {
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);  
 }
 
-.bottom-line {
-  margin-top: 20rpx;
-  margin-bottom: 20rpx;
-  color: #999;
-  font-size: 24rpx;
-  width: 100%;
+.mycell {
+  color: #333;
+  font-size: 28rpx;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: row;
+  background-color: white;
 }
+
+.mycell-expired {
+  color: #666;
+  font-size: 28rpx;
+  display: flex;
+  flex-direction: row;
+  background-color: white;
+}
+

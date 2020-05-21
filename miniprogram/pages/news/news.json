@@ -1,8 +1,9 @@
 {
   "navigationBarTitleText": "Footballer",
   "usingComponents": {
-    "mp-cells": "../../miniprogram_npm/weui-miniprogram/cells/cells",
-    "mp-cell": "../../miniprogram_npm/weui-miniprogram/cell/cell"
+    "van-cell": "@vant/weapp/cell/index",
+    "van-cell-group": "@vant/weapp/cell-group/index",
+    "van-divider": "@vant/weapp/divider/index"
   },
   "enablePullDownRefresh": true
 }

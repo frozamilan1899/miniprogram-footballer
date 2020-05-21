@@ -3,6 +3,8 @@ const app = getApp();
 var util = require('../../common-js/util.js');
 const db = app.globalData.db;
 
+import Notify from '../../miniprogram_npm/@vant/weapp/notify/notify';
+
 Page({
 
   data: {
@@ -66,7 +68,7 @@ Page({
 
   onReachBottom: function() {
     console.log("list->onReachBottom");
-    // util.showToast("没有更多比赛了");
+    Notify({ type: 'success', message: '左滑可以删除比赛，进入详情可以转发比赛', duration: 3000});
   },
 
   onShareAppMessage: function (option) {
