@@ -19,12 +19,12 @@
 
     <van-field label="报名列表" disabled="{{expired}}" placeholder="请报名" bindinput='getSUInput' />
     <view class="tag-list">
-      <van-tag closeable class="demo-margin-right" size="medium" id="success" bindclose="onClose" type="success" wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">{{item.content}}</van-tag>
+      <van-tag closeable="{{item.openid===self_openid}}" size="large" bindclose="onClose" type="success" wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">{{item.content}}</van-tag>
     </view>
 
     <van-field label="请假列表" disabled="{{expired}}" placeholder="请假" bindinput='getAFLInput' />
     <view class="tag-list">
-      <van-tag closeable class="demo-margin-right" size="medium" id="primary" bindclose="onClose" type="primary" wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">{{item.content}}</van-tag>
+      <van-tag closeable="{{item.closeable}}" size="large" bindclose="onClose" type="success" wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">{{item.content}}</van-tag>
     </view>
 
     <van-button hidden="{{locationDisabled}}" type="primary" bindtap="chooseLocation" size="large">选取比赛位置</van-button>

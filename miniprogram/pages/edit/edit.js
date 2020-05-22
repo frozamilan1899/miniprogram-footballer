@@ -44,7 +44,7 @@ Page({
       name: '',
       address: ''
     },
-    expired: false
+    expired: false,
   },
 
   onLoad: function(options) {
@@ -62,7 +62,6 @@ Page({
           _id: that.data.matchId
         }).get({
           success: res => {
-            wx.hideLoading();
             that.data.matchInfo = res.data[0];
             if (that.data.matchInfo._openid != app.globalData.openid) {
               that.data.publisher = false;
@@ -75,25 +74,23 @@ Page({
               that.renderPage(that, '发布比赛', true);
               util.showToast("比赛已过期");
             }
+          },
+          fail: res => {
+            console.log(res);
+          },
+          complete: res => {
             that.data.currentLocation = that.data.matchInfo.location;
             var markers = that.createMarkers(that.data.matchInfo.location);
             that.data.markers = markers;
+            //标记报名列表和请假列表标签是否可删除
+            that.data.matchInfo.signUpList
+            // todo
             console.log(that.data.matchInfo);
             that.setData({
               matchInfo: that.data.matchInfo,
               markers: that.data.markers
-            })
-          },
-          fail: res => {
+            });
             wx.hideLoading();
-            console.log(res);
-            that.data.matchInfo.location = that.data.currentLocation;
-            var markers = that.createMarkers(that.data.currentLocation);
-            that.data.markers = markers;
-            that.setData({
-              matchInfo: that.data.matchInfo,
-              markers: that.data.markers
-            })
           }
         });
       } else {
@@ -196,7 +193,8 @@ Page({
     if (inputStr && inputStr.length > 0) {
       this.data.signUpMap = {
         openid: app.globalData.openid,
-        content: inputStr
+        content: inputStr,
+        closeable: openid === app.globalData.openid
       };
     }
   }, 
@@ -206,7 +204,8 @@ Page({
     if (inputStr && inputStr.length > 0) {
       this.data.askForLeaveMap = {
         openid: app.globalData.openid,
-        content: inputStr
+        content: inputStr,
+        closeable: openid === app.globalData.openid
       };
     }
   }, 
@@ -228,7 +227,6 @@ Page({
     }
 
     // 比赛信息发布或者追加
-    
     var updateTime = new Date().getTime();
     this.data.matchInfo.updateTime = updateTime;
     if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
@@ -374,18 +372,11 @@ Page({
         console.log(res);
         that.data.currentLocation.longitude = res.longitude;
         that.data.currentLocation.latitude = res.latitude;
-        var matchInfo = that.data.matchInfo;
-        matchInfo.location = that.data.currentLocation;
-        that.data.matchInfo = matchInfo;
-        var markers = that.createMarkers(that.data.currentLocation);
-        that.data.markers = markers;
-        that.setData({
-          matchInfo: matchInfo,
-          markers: that.data.markers
-        });
       },
       fail: function(res) {
         console.log(res);
+      },
+      complete: function(res) {
         that.data.matchInfo.location = that.data.currentLocation;
         var markers = that.createMarkers(that.data.currentLocation);
         that.data.markers = markers;
@@ -414,9 +405,7 @@ Page({
         that.data.currentLocation.latitude = res.latitude;
         that.data.currentLocation.name = res.name;
         that.data.currentLocation.address = res.address;
-        var matchInfo = that.data.matchInfo;
-        matchInfo.location = that.data.currentLocation;
-        that.data.matchInfo = matchInfo;
+        that.data.matchInfo.location = that.data.currentLocation;
         var markers = that.createMarkers(that.data.currentLocation);
         that.data.markers = markers;
         that.setData({
