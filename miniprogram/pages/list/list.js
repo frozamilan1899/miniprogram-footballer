@@ -22,7 +22,7 @@ Page({
 
     if (app.globalData.openid && app.globalData.openid != '') {
       this.data.openid = app.globalData.openid;
-      this.data.dataLoaded = true;
+      this.data.dataLoaded = true;// 与onShow有关
     } else {
       var that = this;
       app.CallbackFn = data => {

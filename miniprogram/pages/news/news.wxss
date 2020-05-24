@@ -1,6 +1,6 @@
 /* news.wxss */
 .page-body {
-  background: #f6f6f6;
+  background: white;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

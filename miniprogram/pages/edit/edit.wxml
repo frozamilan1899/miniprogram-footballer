@@ -19,17 +19,17 @@
 
     <van-field label="报名列表" disabled="{{expired}}" placeholder="请报名" bindinput='getSUInput' />
     <view class="tag-list">
-      <van-tag closeable="{{item.openid===self_openid}}" size="large" bindclose="onClose" type="success" wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">{{item.content}}</van-tag>
+      <van-tag closeable="{{item.self}}" size="large" bindclose="onClose" type="success" wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">{{item.content}}</van-tag>
     </view>
 
     <van-field label="请假列表" disabled="{{expired}}" placeholder="请假" bindinput='getAFLInput' />
     <view class="tag-list">
-      <van-tag closeable="{{item.closeable}}" size="large" bindclose="onClose" type="success" wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">{{item.content}}</van-tag>
+      <van-tag closeable="{{item.self}}" size="large" bindclose="onClose" type="success" wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item" data-index="{{index}}">{{item.content}}</van-tag>
     </view>
 
     <van-button hidden="{{locationDisabled}}" type="primary" bindtap="chooseLocation" size="large">选取比赛位置</van-button>
-    <van-field readonly label="场地名称" value="{{matchInfo.location.name}}"/>
-    <van-field readonly label="场地地址" value="{{matchInfo.location.address}}"/>
+    <van-field readonly required="{{true}}" label="场地名称" value="{{matchInfo.location.name}}"/>
+    <van-field readonly required="{{true}}" label="场地地址" value="{{matchInfo.location.address}}"/>
     <map id="map" longitude="{{matchInfo.location.longitude}}" latitude="{{matchInfo.location.latitude}}" scale="14" markers="{{markers}}" show-compass="true" enable-zoom="false"></map>
     <van-button type="primary" bindtap="openLocation" size="large">查看位置详情</van-button>
   </view>
