@@ -392,34 +392,34 @@ Page({
 
   onClose: function(e) {
     console.log(e);
+    var that = this;
     wx.showModal({
-      content: '是否确认删除？',
+      content: '确认是否删除？',
       cancelText: '取消',
       confirmText: '删除',
       success(res) {
         // 从报名列表或者请假列表中删除自己
         var dataIndex = parseInt(e.target.dataset.index);
         // 删除所有自己的报名信息
-        this.data.matchInfo.signUpList.forEach(function (item, index, arr) {
+        that.data.matchInfo.signUpList.forEach(function (item, index, arr) {
           if (index === dataIndex) {
             arr.splice(index, 1);
           }
         });
         // 删除所有自己的请假信息
-        this.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
+        that.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
           if (index === dataIndex) {
             arr.splice(index, 1);
           }
         });
         // 删除关联自己的openid
-        this.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+        that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
           if (index === dataIndex) {
             arr.splice(index, 1);
           }
         });
 
         // 执行更新操作
-        var that = this;
         if (that.data.publisher) {
           console.log("local update");
           db.collection(app.globalData.dbName).doc(that.data.matchId).update({
