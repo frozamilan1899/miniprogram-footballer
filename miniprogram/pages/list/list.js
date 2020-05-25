@@ -181,13 +181,13 @@ Page({
             wx.showLoading({
               title: '删除中...',
             });
-            // 删除所有自己的报名信息
+            // 删除自己的报名信息
             matchInfo.signUpList.forEach(function (item, index, arr) {
               if (item.openid === that.data.openid) {
                 arr.splice(index, 1);
               }
             });
-            // 删除所有自己的请假信息
+            // 删除自己的请假信息
             matchInfo.askForLeaveList.forEach(function (item, index, arr) {
               if (item.openid === that.data.openid) {
                 arr.splice(index, 1);

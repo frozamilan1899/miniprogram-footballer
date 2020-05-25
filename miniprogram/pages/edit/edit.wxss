@@ -6,6 +6,7 @@
   flex-direction: column;
   justify-content: flex-start;
   width: 100%;
+  overflow-x:hidden;
 }
 
 .btns { 
@@ -21,14 +22,17 @@
 
 .tag-list {
   width: 100%;
-  display: table;
+  display: flex;
   flex-direction: row;
   justify-content: flex-start;
   flex-wrap: wrap;
-  padding: 20rpx;
+  padding-top: 20rpx;
+  padding-left: 20rpx;
+  padding-right: 20rpx;
 }
 
-.tag-list tag-item {
+.tag-item {
+  padding-bottom: 20rpx;
   margin-left: 20rpx;
 }
 

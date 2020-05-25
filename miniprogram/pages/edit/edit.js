@@ -73,25 +73,19 @@ Page({
               that.data.expired = true;
               that.renderPage(that, '发布比赛', true);
               util.showToast("比赛已过期");
-            }
-            // 检查报名列表的身份
-            for (let i = 0; i < this.data.matchInfo.signUpList.length; i++) {
-              let signUpMap = this.data.matchInfo.signUpList[i];
-              if (signUpMap.openid == app.globalData.openid) {
-                if (that.data.expired != true) {
-                  this.data.matchInfo.signUpList[i].close = true;
-                }
+            } else {
+              that.data.expired = false;
+              // 检查报名列表的身份
+              for (let i = 0; i < that.data.matchInfo.signUpList.length; i++) {
+                let signUpMap = that.data.matchInfo.signUpList[i];
+                that.data.matchInfo.signUpList[i].close = (signUpMap.openid == app.globalData.openid); 
               }
-            }
-            // 检查请假列表的身份
-            for (let i = 0; i < this.data.matchInfo.askForLeaveList.length; i++) {
-              let askForLeaveMap = this.data.matchInfo.askForLeaveList[i];
-              if (askForLeaveMap.openid == app.globalData.openid) {
-                if (that.data.expired != true) {
-                  this.data.matchInfo.askForLeaveList[i].close = true;
-                }
+              // 检查请假列表的身份
+              for (let i = 0; i < that.data.matchInfo.askForLeaveList.length; i++) {
+                let askForLeaveMap = that.data.matchInfo.askForLeaveList[i];
+                that.data.matchInfo.askForLeaveList[i].close = (askForLeaveMap.openid == app.globalData.openid); 
               }
-            }
+            } 
           },
           fail: res => {
             console.log(res);
@@ -127,23 +121,17 @@ Page({
           this.data.expired = true;
           this.renderPage(this, '发布比赛', true);
           util.showToast("比赛已过期");
-        }
-        // 检查报名列表的身份
-        for (let i = 0; i < this.data.matchInfo.signUpList.length; i++) {
-          let signUpMap = this.data.matchInfo.signUpList[i];
-          if (signUpMap.openid == app.globalData.openid) {
-            if (this.data.expired != true) {
-              this.data.matchInfo.signUpList[i].close = true;
-            }
+        } else {
+          this.data.expired = false;
+          // 检查报名列表的身份
+          for (let i = 0; i < this.data.matchInfo.signUpList.length; i++) {
+            let signUpMap = this.data.matchInfo.signUpList[i];
+            this.data.matchInfo.signUpList[i].close = (signUpMap.openid == app.globalData.openid);
           }
-        }
-        // 检查请假列表的身份
-        for (let i = 0; i < this.data.matchInfo.askForLeaveList.length; i++) {
-          let askForLeaveMap = this.data.matchInfo.askForLeaveList[i];
-          if (askForLeaveMap.openid == app.globalData.openid) {
-            if (this.data.expired != true) {
-              this.data.matchInfo.askForLeaveList[i].close = true;
-            }
+          // 检查请假列表的身份
+          for (let i = 0; i < this.data.matchInfo.askForLeaveList.length; i++) {
+            let askForLeaveMap = this.data.matchInfo.askForLeaveList[i];
+            this.data.matchInfo.askForLeaveList[i].close = (askForLeaveMap.openid == app.globalData.openid);
           }
         }
         // 获取比赛位置信息
@@ -262,8 +250,8 @@ Page({
     // 比赛信息发布或者追加
     var updateTime = new Date().getTime();
     this.data.matchInfo.updateTime = updateTime;
+    // 添加这场比赛关联的openid
     if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
-      // 添加这场比赛相关的openid
       this.data.matchInfo.referredOpeneIds.push(app.globalData.openid);
     }
     var that = this;
@@ -285,6 +273,13 @@ Page({
           return;
         } else {
           this.data.matchInfo.signUpList.push(this.data.signUpMap);
+          // 将请假列表中的报名人删除
+          this.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
+            if (item.content == that.data.signUpMap.content
+              && item.openid == that.data.signUpMap.openid) {
+              arr.splice(index, 1);
+            }
+          });
         }
       }
       // 判断请假信息的合法性
@@ -303,7 +298,14 @@ Page({
           return;
         } else {
           this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveMap);
-        }
+          // 将报名列表中的请假人删除
+          this.data.matchInfo.signUpList.forEach(function (item, index, arr) {
+            if (item.content == that.data.askForLeaveMap.content
+              && item.openid == that.data.askForLeaveMap.openid) {
+              arr.splice(index, 1);
+            }
+          });
+        } 
       }
       // 执行更新操作
       if (this.data.publisher) {
@@ -403,25 +405,61 @@ Page({
         } else if (res.confirm) {
           // 从报名列表或者请假列表中删除自己
           var dataIndex = parseInt(e.target.dataset.index);
-          // 删除所有自己的报名信息
-          that.data.matchInfo.signUpList.forEach(function (item, index, arr) {
-            if (index === dataIndex) {
-              arr.splice(index, 1);
+          var tagId = e.target.id;
+          console.log(tagId);
+          var tagDeleteTip = '';
+          if ("signUp-tag" == tagId) {
+            // 删除自己的报名信息
+            that.data.matchInfo.signUpList.forEach(function (item, index, arr) {
+              if (index === dataIndex) {
+                arr.splice(index, 1);
+              }
+            });
+            // 如果在报名列表中没有自己的报名信息，将关联的openid删除（发布者除外）
+            let foundSU = false; 
+            for (let i = 0;i < that.data.matchInfo.signUpList.length;i++) {
+              let signUpMap = that.data.matchInfo.signUpList[i];
+              if (signUpMap.openid == app.globalData.openid) {
+                foundSU = true;
+                break;
+              }
             }
-          });
-          // 删除所有自己的请假信息
-          that.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
-            if (index === dataIndex) {
-              arr.splice(index, 1);
+            if (!foundSU) {
+              // 删除关联自己的openid
+              that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+                if (item === app.globalData.openid) {
+                  arr.splice(index, 1);
+                }
+              });
             }
-          });
-          // 删除关联自己的openid
-          that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
-            if (index === dataIndex) {
-              arr.splice(index, 1);
+            tagDeleteTip = "删除报名成功";
+          }
+          if ("askForLeave-tag" == tagId) {
+            // 删除自己的请假信息
+            that.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
+              if (index === dataIndex) {
+                arr.splice(index, 1);
+              }
+            });
+            // 如果在请假列表中没有自己的请假信息，将关联的openid删除（发布者除外）
+            let foundAFL = false;
+            for (let i = 0; i < that.data.matchInfo.askForLeaveList.length; i++) {
+              let askForLeaveMap = that.data.matchInfo.askForLeaveList[i];
+              if (askForLeaveMap.openid == app.globalData.openid) {
+                foundAFL = true;
+                break;
+              }
             }
-          });
-
+            if (!foundAFL) {
+              // 删除关联自己的openid
+              that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+                if (item === app.globalData.openid) {
+                  arr.splice(index, 1);
+                }
+              });
+            }
+            tagDeleteTip = "删除请假成功";
+          }
           // 执行更新操作
           if (that.data.publisher) {
             console.log("local update");
@@ -433,7 +471,7 @@ Page({
                 referredOpeneIds: that.data.matchInfo.referredOpeneIds
               },
               success: function (res) {
-                util.showToast("删除报名成功");
+                util.showToast(tagDeleteTip);
               },
               complete: function (res) {
                 that.setData({
@@ -455,7 +493,7 @@ Page({
               },
               success: function (res) {
                 console.log('[云函数] [update]: ', res);
-                util.showToast("删除报名成功");
+                util.showToast(tagDeleteTip);
               },
               complete: function (res) {
                 that.setData({
