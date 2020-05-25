@@ -23,8 +23,13 @@
   width: 100%;
   display: table;
   flex-direction: row;
-  justify-content: left;
-  padding: 4rpx;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding: 20rpx;
+}
+
+.tag-list tag-item {
+  margin-left: 20rpx;
 }
 
 #map {

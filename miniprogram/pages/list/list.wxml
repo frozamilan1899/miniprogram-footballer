@@ -11,13 +11,13 @@
       <open-data type="userNickName"></open-data>
     </view>
 
-    <van-button type="primary" size="large" bindclick="toEditPage"> 新比赛 </van-button>
+    <van-button type="primary" size="large" bind:click="toEditPage"> 新比赛 </van-button>
 
     <van-skeleton title row="3" loading="{{dataLoaded}}"/>
 
     <van-cell-group wx:if="{{matches.length}}" title="近期参与过的所有比赛">
-      <van-swipe-cell right-width="{{65}}" wx:for="{{matches}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
-        <van-cell center is-link="{{!item.hasNewMatchInfo}}" border clickable title="比赛主题：{{item.subject}}" use-label-slot="{{true}}" label-class="{{item.extClass}}" url="../edit/edit?id={{item._id}}">
+      <van-swipe-cell right-width="{{65}}" wx:for="{{matches}}" wx:key="key" wx:for-item="item" data-index="{{index}}" async-close bind:close="onClose">
+        <van-cell center is-link="{{!item.hasNewMatchInfo}}" border clickable title="比赛主题：{{item.subject}}" use-label-slot="{{true}}" url="../edit/edit?id={{item._id}}">
           <view slot="right-icon">
             <view hidden="{{!item.hasNewMatchInfo}}">
               <van-tag round type="danger">new</van-tag>
@@ -30,11 +30,11 @@
             <view>比赛地点：{{item.location.name}}（{{item.location.address}}）</view>
           </view>
         </van-cell>
-        <view slot="right">删除</view>
+        <view slot="right" class="van-swipe-cell__right">删除</view>
       </van-swipe-cell>
     </van-cell-group>
 
-    <van-divider wx:if="{{matches.length}}" contentPosition="center">没有更多比赛了</van-divider>
-    <van-divider wx:else contentPosition="center">暂时没有比赛数据</van-divider>
+    <van-divider wx:if="{{matches.length}}" contentPosition="center">因为足球，所以美丽</van-divider>
+    <van-divider wx:else contentPosition="center">同城聚英豪，绿茵显英姿</van-divider>
   </view>
 </view>

@@ -30,19 +30,15 @@
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);  
 }
 
-.mycell {
-  color: #333;
-  font-size: 28rpx;
+.van-swipe-cell__right {
   display: flex;
-  flex-direction: row;
-  background-color: white;
+  align-items: center;
+  justify-content: center;
+  width: 65px;
+  height: 44px;
+  font-size: 15px;
+  line-height: 44px;
+  color: #fff;
+  text-align: center;
+  background-color: #ee0a24;
 }
-
-.mycell-expired {
-  color: #666;
-  font-size: 28rpx;
-  display: flex;
-  flex-direction: row;
-  background-color: white;
-}
-

@@ -77,9 +77,9 @@ Page({
       data: paster,
       success: function() {
         wx.showModal({
-          content: '已将链接地址复制到剪贴板：\r\n' + paster + '\r\n请在其他浏览器内打开查看',
-          cancelText: '好的',
-          confirmText: '知道了',
+          content: '由于个人版微信小程序的开放限制，已将链接地址复制到剪贴板：\r\n' + paster + '\r\n请在其他浏览器内打开查看',
+          showCancel: false,
+          confirmText: '好的',
           success(res) {}
         });
       }

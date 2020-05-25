@@ -31,26 +31,21 @@ Page({
         that.onQuery(that);
       }
     }
-    
-    this.setData({
-      slideButtons: [{
-        type: 'warn',
-        text: '删除',
-      }]
-    });
   },
 
-  slideButtonTap(e) {
-    console.log('slide button tap', e.detail);
+  onClose(e) {
+    console.log('delete button tap');
+    console.log(e.detail);
     var dataIndex = parseInt(e.target.dataset.index);
-    switch (e.detail.index) {
-      case 0: {
-        this.deleteMatch(dataIndex);
-      }
-      break;
-      default: {
-        console.error('unknown data');
-      }
+    const { position, instance } = e.detail;
+    switch (position) {
+      case 'left':
+      case 'cell':
+        instance.close();
+        break;
+      case 'right':
+        this.deleteMatch(dataIndex, instance);
+        break;
     }
   },
 
@@ -134,9 +129,6 @@ Page({
           for (let i = 0; i < _this.data.matches.length; i++) {
             if (currentTime > util.convertDateFromString(_this.data.matches[i].time)) {
               _this.data.matches[i].expired = true;
-              _this.data.matches[i].extClass = "mycell-expired";
-            } else {
-              _this.data.matches[i].extClass = "mycell";
             }
           }
         } else {
@@ -170,7 +162,7 @@ Page({
     }, 10000);
   },
 
-  deleteMatch: function (dataIndex) {
+  deleteMatch: function (dataIndex, instance) {
     var matchInfo = this.data.matches[dataIndex];
     var _id = matchInfo._id;
     var _openid = matchInfo._openid;
@@ -184,23 +176,24 @@ Page({
         success(res) {
           if (res.cancel) {
             console.log(res);
+            instance.close();
           } else if (res.confirm) {
             wx.showLoading({
               title: '删除中...',
             });
-            // 删除所有报名信息
+            // 删除所有自己的报名信息
             matchInfo.signUpList.forEach(function (item, index, arr) {
               if (item.openid === that.data.openid) {
                 arr.splice(index, 1);
               }
             });
-            // 删除所有请假信息
+            // 删除所有自己的请假信息
             matchInfo.askForLeaveList.forEach(function (item, index, arr) {
               if (item.openid === that.data.openid) {
                 arr.splice(index, 1);
               }
             });
-            // 删除关联openid
+            // 删除关联自己的openid
             matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
               if (item === that.data.openid) {
                 arr.splice(index, 1);
@@ -219,13 +212,15 @@ Page({
               },
               success: function (res) {
                 console.log('[云函数] [update]: ', res);
-                wx.hideLoading();
                 that.onQuery(that);
                 util.showToast("删除比赛数据成功");
               },
               fail: function (res) {
-                wx.hideLoading();
                 util.showToast("删除比赛数据失败");
+              },
+              complete: function() {
+                wx.hideLoading();
+                instance.close();
               }
             });
           }
@@ -240,19 +235,22 @@ Page({
         success(res) {
           if (res.cancel) {
             console.log(res);
+            instance.close();
           } else if (res.confirm) {
             wx.showLoading({
               title: '删除中...',
             });
             db.collection(app.globalData.dbName).doc(_id).remove({
               success: res => {
-                wx.hideLoading();
                 that.onQuery(that);
                 util.showToast("删除比赛成功");
               },
               fail: err => {
-                wx.hideLoading();
                 util.showToast("删除比赛失败");
+              },
+              complete: res => {
+                wx.hideLoading();
+                instance.close();
               }
             });
           }

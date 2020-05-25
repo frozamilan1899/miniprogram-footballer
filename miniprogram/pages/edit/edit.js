@@ -78,14 +78,18 @@ Page({
             for (let i = 0; i < this.data.matchInfo.signUpList.length; i++) {
               let signUpMap = this.data.matchInfo.signUpList[i];
               if (signUpMap.openid == app.globalData.openid) {
-                this.data.matchInfo.signUpList[i].self = true;
+                if (that.data.expired != true) {
+                  this.data.matchInfo.signUpList[i].close = true;
+                }
               }
             }
             // 检查请假列表的身份
             for (let i = 0; i < this.data.matchInfo.askForLeaveList.length; i++) {
               let askForLeaveMap = this.data.matchInfo.askForLeaveList[i];
               if (askForLeaveMap.openid == app.globalData.openid) {
-                this.data.matchInfo.askForLeaveList[i].self = true;
+                if (that.data.expired != true) {
+                  this.data.matchInfo.askForLeaveList[i].close = true;
+                }
               }
             }
           },
@@ -128,14 +132,18 @@ Page({
         for (let i = 0; i < this.data.matchInfo.signUpList.length; i++) {
           let signUpMap = this.data.matchInfo.signUpList[i];
           if (signUpMap.openid == app.globalData.openid) {
-            this.data.matchInfo.signUpList[i].self = true;
+            if (this.data.expired != true) {
+              this.data.matchInfo.signUpList[i].close = true;
+            }
           }
         }
         // 检查请假列表的身份
         for (let i = 0; i < this.data.matchInfo.askForLeaveList.length; i++) {
           let askForLeaveMap = this.data.matchInfo.askForLeaveList[i];
           if (askForLeaveMap.openid == app.globalData.openid) {
-            this.data.matchInfo.askForLeaveList[i].self = true;
+            if (this.data.expired != true) {
+              this.data.matchInfo.askForLeaveList[i].close = true;
+            }
           }
         }
         // 获取比赛位置信息
@@ -384,51 +392,77 @@ Page({
 
   onClose: function(e) {
     console.log(e);
-    util.showToast('删除标签' + e.currentTarget.dataset.index);
-    // 从报名列表删除
-    
-    
-    return;
-    var that = this;
-    // 执行更新操作
-    if (this.data.publisher) {
-      console.log("local update");
-      db.collection(app.globalData.dbName).doc(that.data.matchId).update({
-        data: {
-          subject: that.data.matchInfo.subject,
-          time: that.data.matchInfo.time,
-          location: that.data.matchInfo.location,
-          askForLeaveList: that.data.matchInfo.askForLeaveList,
-          signUpList: that.data.matchInfo.signUpList,
-          updateTime: that.data.matchInfo.updateTime,
-          referredOpeneIds: that.data.matchInfo.referredOpeneIds
-        },
-        success: function (res) {
-          util.showToast(that.data.publishText + "成功");
+    wx.showModal({
+      content: '是否确认删除？',
+      cancelText: '取消',
+      confirmText: '删除',
+      success(res) {
+        // 从报名列表或者请假列表中删除自己
+        var dataIndex = parseInt(e.target.dataset.index);
+        // 删除所有自己的报名信息
+        this.data.matchInfo.signUpList.forEach(function (item, index, arr) {
+          if (index === dataIndex) {
+            arr.splice(index, 1);
+          }
+        });
+        // 删除所有自己的请假信息
+        this.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
+          if (index === dataIndex) {
+            arr.splice(index, 1);
+          }
+        });
+        // 删除关联自己的openid
+        this.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+          if (index === dataIndex) {
+            arr.splice(index, 1);
+          }
+        });
+
+        // 执行更新操作
+        var that = this;
+        if (that.data.publisher) {
+          console.log("local update");
+          db.collection(app.globalData.dbName).doc(that.data.matchId).update({
+            data: {
+              askForLeaveList: that.data.matchInfo.askForLeaveList,
+              signUpList: that.data.matchInfo.signUpList,
+              updateTime: that.data.matchInfo.updateTime,
+              referredOpeneIds: that.data.matchInfo.referredOpeneIds
+            },
+            success: function (res) {
+              util.showToast("删除报名成功");
+            },
+            complete: function (res) {
+              that.setData({
+                matchInfo: that.data.matchInfo
+              });
+            }
+          });
+        } else {
+          console.log("cloud update, the other people cannot directly modify the match info");
+          // 调用云函数更新
+          wx.cloud.callFunction({
+            name: 'update',
+            data: {
+              id: that.data.matchId,
+              signUpList: that.data.matchInfo.signUpList,
+              askForLeaveList: that.data.matchInfo.askForLeaveList,
+              updateTime: that.data.matchInfo.updateTime,
+              referredOpeneIds: that.data.matchInfo.referredOpeneIds
+            },
+            success: function (res) {
+              console.log('[云函数] [update]: ', res);
+              util.showToast("删除报名成功");
+            },
+            complete: function (res) {
+              that.setData({
+                matchInfo: that.data.matchInfo
+              });
+            }
+          });
         }
-      });
-    } else {
-      console.log("cloud update, the other people cannot directly modify the match info");
-      if ('' === this.data.signUpMap.content && '' === this.data.askForLeaveMap.content) {
-        util.showToast("请追加报名或请假");
-        return;
       }
-      // 调用云函数更新
-      wx.cloud.callFunction({
-        name: 'update',
-        data: {
-          id: that.data.matchId,
-          signUpList: that.data.matchInfo.signUpList,
-          askForLeaveList: that.data.matchInfo.askForLeaveList,
-          updateTime: that.data.matchInfo.updateTime,
-          referredOpeneIds: that.data.matchInfo.referredOpeneIds
-        },
-        success: function (res) {
-          console.log('[云函数] [update]: ', res);
-          util.showToast(that.data.publishText + "成功");
-        }
-      });
-    }
+    });
   },
 
   /**
