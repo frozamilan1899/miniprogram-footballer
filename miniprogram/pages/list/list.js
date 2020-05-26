@@ -4,6 +4,7 @@ var util = require('../../common-js/util.js');
 const db = app.globalData.db;
 
 import Notify from '../../miniprogram_npm/@vant/weapp/notify/notify';
+import Dialog from '../../miniprogram_npm/@vant/weapp/dialog/dialog';
 
 Page({
 
@@ -127,7 +128,7 @@ Page({
           // 检查每场比赛是否已过期
           var currentTime = new Date().getTime();
           for (let i = 0; i < _this.data.matches.length; i++) {
-            if (currentTime > util.convertDateFromString(_this.data.matches[i].time)) {
+            if (currentTime > _this.data.matches[i].time) {
               _this.data.matches[i].expired = true;
             }
           }
@@ -139,7 +140,7 @@ Page({
         _this.setData({
           matches: _this.data.matches
         });
-        // 缓存比赛信息
+        // 缓存已获取到的比赛信息
         wx.setStorage({
           key: app.globalData.previousMatchesInfoKey,
           data: _this.data.matches,
@@ -168,93 +169,85 @@ Page({
     var _openid = matchInfo._openid;
     var that = this;
     if (_openid != that.data.openid) {
-      wx.showModal({
+      Dialog.confirm({
         title: '提示',
-        content: '此操作仅会删除您的报名或请假数据，不会删除原UP主的比赛，是否继续删除？',
-        cancelText: '取消',
-        confirmText: '删除',
-        success(res) {
-          if (res.cancel) {
-            console.log(res);
-            instance.close();
-          } else if (res.confirm) {
-            wx.showLoading({
-              title: '删除中...',
-            });
-            // 删除自己的报名信息
-            matchInfo.signUpList.forEach(function (item, index, arr) {
-              if (item.openid === that.data.openid) {
-                arr.splice(index, 1);
-              }
-            });
-            // 删除自己的请假信息
-            matchInfo.askForLeaveList.forEach(function (item, index, arr) {
-              if (item.openid === that.data.openid) {
-                arr.splice(index, 1);
-              }
-            });
-            // 删除关联自己的openid
-            matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
-              if (item === that.data.openid) {
-                arr.splice(index, 1);
-              }
-            });
-
-            // 调用云函数更新
-            wx.cloud.callFunction({
-              name: 'update',
-              data: {
-                id: _id,
-                signUpList: matchInfo.signUpList,
-                askForLeaveList: matchInfo.askForLeaveList,
-                updateTime: new Date().getTime(),
-                referredOpeneIds: matchInfo.referredOpeneIds
-              },
-              success: function (res) {
-                console.log('[云函数] [update]: ', res);
-                that.onQuery(that);
-                util.showToast("删除比赛数据成功");
-              },
-              fail: function (res) {
-                util.showToast("删除比赛数据失败");
-              },
-              complete: function() {
-                wx.hideLoading();
-                instance.close();
-              }
-            });
+        message: '此操作仅会删除您的报名或请假数据，不会删除原UP主的比赛，是否继续删除？',
+      }).then(() => {
+        // on confirm
+        wx.showLoading({
+          title: '删除中...',
+        });
+        // 删除自己的报名信息
+        matchInfo.signUpList.forEach(function (item, index, arr) {
+          if (item.openid === that.data.openid) {
+            arr.splice(index, 1);
           }
-        }
+        });
+        // 删除自己的请假信息
+        matchInfo.askForLeaveList.forEach(function (item, index, arr) {
+          if (item.openid === that.data.openid) {
+            arr.splice(index, 1);
+          }
+        });
+        // 删除关联自己的openid
+        matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+          if (item === that.data.openid) {
+            arr.splice(index, 1);
+          }
+        });
+
+        // 调用云函数更新
+        wx.cloud.callFunction({
+          name: 'update',
+          data: {
+            id: _id,
+            signUpList: matchInfo.signUpList,
+            askForLeaveList: matchInfo.askForLeaveList,
+            updateTime: new Date().getTime(),
+            referredOpeneIds: matchInfo.referredOpeneIds
+          },
+          success: function (res) {
+            console.log('[云函数] [update]: ', res);
+            that.onQuery(that);
+            util.showToast("删除比赛数据成功");
+          },
+          fail: function () {
+            util.showToast("删除比赛数据失败");
+          },
+          complete: function () {
+            wx.hideLoading();
+            instance.close();
+          }
+        });
+      }).catch(() => {
+        // on cancel
+        instance.close();
       });
     } else {
-      wx.showModal({
+      Dialog.confirm({
         title: '提示',
-        content: '作为比赛的UP主，此操作会删除参与这场比赛所有人的报名或请假数据，是否继续删除？',
-        cancelText: '取消',
-        confirmText: '删除',
-        success(res) {
-          if (res.cancel) {
-            console.log(res);
+        message: '作为比赛的UP主，此操作会删除参与这场比赛所有人的报名或请假数据，是否继续删除？',
+      }).then(() => {
+        // on confirm
+        wx.showLoading({
+          title: '删除中...',
+        });
+        db.collection(app.globalData.dbName).doc(_id).remove({
+          success: function() {
+            that.onQuery(that);
+            util.showToast("删除比赛成功");
+          },
+          fail: function () {
+            util.showToast("删除比赛失败");
+          },
+          complete: function () {
+            wx.hideLoading();
             instance.close();
-          } else if (res.confirm) {
-            wx.showLoading({
-              title: '删除中...',
-            });
-            db.collection(app.globalData.dbName).doc(_id).remove({
-              success: res => {
-                that.onQuery(that);
-                util.showToast("删除比赛成功");
-              },
-              fail: err => {
-                util.showToast("删除比赛失败");
-              },
-              complete: res => {
-                wx.hideLoading();
-                instance.close();
-              }
-            });
           }
-        }
+        });
+      }).catch(() => {
+        // on cancel
+        instance.close();
       });
     }
   },

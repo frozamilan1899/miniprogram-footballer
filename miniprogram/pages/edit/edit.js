@@ -3,13 +3,16 @@ const app = getApp();
 var util = require('../../common-js/util.js');
 const db = app.globalData.db;
 
+import Notify from '../../miniprogram_npm/@vant/weapp/notify/notify';
+import Dialog from '../../miniprogram_npm/@vant/weapp/dialog/dialog';
+
 Page({
   data: {
-    multiArray: [['3-1', '3-2', '3-3', '3-4', '3-5'], [0, 1, 2, 3, 4, 5, 6], [0, 10, 20]],
-    multiIndex: [0, 0, 0],
+    matchId: "",
     matchInfo: {
       subject: "",
       time: "",
+      showTime: "",
       signUpList: [],
       askForLeaveList: [],
       location: {
@@ -29,22 +32,49 @@ Page({
       openid: "",
       content: ""
     },
-    markers: [],
-    matchId: "",
-    pageDate: new Date(),
     publishNewMatch: true,
     publisher: true,
     publishText: '发布比赛',
     subjectDisabled: false,
     timeDisabled: false,
     locationDisabled: false,
+    expired: false,
+    // ------------------------------
+    markers: [],
     currentLocation: {
       longitude: 108.95000,
       latitude: 34.26667,
       name: '',
       address: ''
     },
-    expired: false,
+    // ------------------------------
+    showTimePickerFlag: false,
+    minDate: new Date().getTime(),
+    currentDate: new Date().getTime(),
+    formatter(type, value) {
+      if (type === 'year') {
+        return `${value}年`;
+      }
+      if (type === 'month') {
+        return `${value}月`;
+      }
+      if (type === 'day') {
+        return `${value}日`;
+      }
+      if (type === 'hour') {
+        return `${value}时`;
+      }
+      if (type === 'minute') {
+        return `${value}分`;
+      }
+      return value;
+    },
+    filter(type, options) {
+      if (type === 'minute') {
+        return options.filter((option) => option % 10 === 0);
+      }
+      return options;
+    },
   },
 
   onLoad: function(options) {
@@ -69,10 +99,10 @@ Page({
             }
             // 检查本场比赛是否已过期，若已过期将部分控件设置为不可用
             var currentTime = new Date().getTime();
-            if (currentTime > util.convertDateFromString(that.data.matchInfo.time)) {
+            if (currentTime > that.data.matchInfo.time) {
               that.data.expired = true;
               that.renderPage(that, '发布比赛', true);
-              util.showToast("比赛已过期");
+              that.notify('warning', '比赛已过期');
             } else {
               that.data.expired = false;
               // 检查报名列表的身份
@@ -103,6 +133,12 @@ Page({
             wx.hideLoading();
           }
         });
+
+        // 10秒钟后没有数据返回，关闭loading
+        setTimeout(function () {
+          wx.hideLoading();
+          wx.stopPullDownRefresh();
+        }, 10000);
       } else {
         // 从缓存中获取指定id的比赛信息
         var cachedMatches = wx.getStorageSync(app.globalData.previousMatchesInfoKey);
@@ -120,7 +156,7 @@ Page({
         if (this.data.matchInfo.expired) {
           this.data.expired = true;
           this.renderPage(this, '发布比赛', true);
-          util.showToast("比赛已过期");
+          this.notify('warning', '比赛已过期');
         } else {
           this.data.expired = false;
           // 检查报名列表的身份
@@ -231,19 +267,23 @@ Page({
     }
   }, 
 
+  notify: function(tp, msg){
+    Notify({ type: tp, message: msg, duration: 2000 });
+  },
+
   submitMatchInfo: function() {
     // 必须项判空操作
     if ('' === this.data.matchInfo.subject) {
-      util.showToast("请填写比赛主题");
+      this.notify('danger', '请填写比赛主题');
       return;
     }
-    if ('' === this.data.matchInfo.time) {
-      util.showToast("请选择日期和时间");
+    if ('' === this.data.matchInfo.showTime) {
+      this.notify('danger', '请选择日期和时间');
       return;
     }
     if ('' === this.data.matchInfo.location.name 
       && '' === this.data.matchInfo.location.address) {
-      util.showToast("请选取比赛位置");
+      this.notify('danger', '请选取比赛位置');
       return;
     }
 
@@ -269,7 +309,7 @@ Page({
           }
         }
         if (existedInSUL) {
-          util.showToast(this.data.signUpMap.content + "已报名");
+          this.notify('warning', this.data.signUpMap.content + "已报名");
           return;
         } else {
           this.data.matchInfo.signUpList.push(this.data.signUpMap);
@@ -294,7 +334,7 @@ Page({
           }
         }
         if (existedInAFL) {
-          util.showToast(this.data.signUpMap.content + "已请假");
+          this.notify('warning', this.data.askForLeaveMap.content + "已请假");
           return;
         } else {
           this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveMap);
@@ -314,6 +354,7 @@ Page({
           data: {
             subject: that.data.matchInfo.subject,
             time: that.data.matchInfo.time,
+            showTime: that.data.matchInfo.showTime,
             location: that.data.matchInfo.location,
             askForLeaveList: that.data.matchInfo.askForLeaveList,
             signUpList: that.data.matchInfo.signUpList,
@@ -327,7 +368,7 @@ Page({
       } else {
         console.log("cloud update, the other people cannot directly modify the match info");
         if ('' === this.data.signUpMap.content && '' === this.data.askForLeaveMap.content) {
-          util.showToast("请追加报名或请假");
+          this.notify('danger', '请追加报名或请假');
           return;
         }
         // 调用云函数更新
@@ -348,6 +389,14 @@ Page({
       }
     } else {
       console.log("add match info");
+      // 判断报名信息的合法性
+      if (this.data.signUpMap.content != '') {
+        this.data.matchInfo.signUpList.push(this.data.signUpMap);
+      }
+      // 判断请假信息的合法性
+      if (this.data.askForLeaveMap.content != '') {
+        this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveMap);
+      }
       db.collection(app.globalData.dbName).add({
         data: that.data.matchInfo,
         success: function (res) {
@@ -395,115 +444,112 @@ Page({
   onClose: function(e) {
     console.log(e);
     var that = this;
-    wx.showModal({
-      content: '确认是否删除？',
-      cancelText: '取消',
-      confirmText: '删除',
-      success(res) {
-        if (res.cancel) {
-          console.log(res);
-        } else if (res.confirm) {
-          // 从报名列表或者请假列表中删除自己
-          var dataIndex = parseInt(e.target.dataset.index);
-          var tagId = e.target.id;
-          console.log(tagId);
-          var tagDeleteTip = '';
-          if ("signUp-tag" == tagId) {
-            // 删除自己的报名信息
-            that.data.matchInfo.signUpList.forEach(function (item, index, arr) {
-              if (index === dataIndex) {
-                arr.splice(index, 1);
-              }
-            });
-            // 如果在报名列表中没有自己的报名信息，将关联的openid删除（发布者除外）
-            let foundSU = false; 
-            for (let i = 0;i < that.data.matchInfo.signUpList.length;i++) {
-              let signUpMap = that.data.matchInfo.signUpList[i];
-              if (signUpMap.openid == app.globalData.openid) {
-                foundSU = true;
-                break;
-              }
-            }
-            if (!foundSU) {
-              // 删除关联自己的openid
-              that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
-                if (item === app.globalData.openid) {
-                  arr.splice(index, 1);
-                }
-              });
-            }
-            tagDeleteTip = "删除报名成功";
+    Dialog.confirm({
+      title: '提示',
+      message: '确认是否删除？',
+    }).then(() => {
+      // on confirm
+      // 从报名列表或者请假列表中删除自己
+      var dataIndex = parseInt(e.target.dataset.index);
+      var tagId = e.target.id;
+      console.log(tagId);
+      var tagDeleteTip = '';
+      if ("signUp-tag" == tagId) {
+        // 删除自己的报名信息
+        that.data.matchInfo.signUpList.forEach(function (item, index, arr) {
+          if (index === dataIndex) {
+            arr.splice(index, 1);
           }
-          if ("askForLeave-tag" == tagId) {
-            // 删除自己的请假信息
-            that.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
-              if (index === dataIndex) {
-                arr.splice(index, 1);
-              }
-            });
-            // 如果在请假列表中没有自己的请假信息，将关联的openid删除（发布者除外）
-            let foundAFL = false;
-            for (let i = 0; i < that.data.matchInfo.askForLeaveList.length; i++) {
-              let askForLeaveMap = that.data.matchInfo.askForLeaveList[i];
-              if (askForLeaveMap.openid == app.globalData.openid) {
-                foundAFL = true;
-                break;
-              }
-            }
-            if (!foundAFL) {
-              // 删除关联自己的openid
-              that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
-                if (item === app.globalData.openid) {
-                  arr.splice(index, 1);
-                }
-              });
-            }
-            tagDeleteTip = "删除请假成功";
-          }
-          // 执行更新操作
-          if (that.data.publisher) {
-            console.log("local update");
-            db.collection(app.globalData.dbName).doc(that.data.matchId).update({
-              data: {
-                askForLeaveList: that.data.matchInfo.askForLeaveList,
-                signUpList: that.data.matchInfo.signUpList,
-                updateTime: that.data.matchInfo.updateTime,
-                referredOpeneIds: that.data.matchInfo.referredOpeneIds
-              },
-              success: function (res) {
-                util.showToast(tagDeleteTip);
-              },
-              complete: function (res) {
-                that.setData({
-                  matchInfo: that.data.matchInfo
-                });
-              }
-            });
-          } else {
-            console.log("cloud update, the other people cannot directly modify the match info");
-            // 调用云函数更新
-            wx.cloud.callFunction({
-              name: 'update',
-              data: {
-                id: that.data.matchId,
-                signUpList: that.data.matchInfo.signUpList,
-                askForLeaveList: that.data.matchInfo.askForLeaveList,
-                updateTime: that.data.matchInfo.updateTime,
-                referredOpeneIds: that.data.matchInfo.referredOpeneIds
-              },
-              success: function (res) {
-                console.log('[云函数] [update]: ', res);
-                util.showToast(tagDeleteTip);
-              },
-              complete: function (res) {
-                that.setData({
-                  matchInfo: that.data.matchInfo
-                });
-              }
-            });
+        });
+        // 如果在报名列表中没有自己的报名信息，将关联的openid删除（发布者除外）
+        let foundSU = false;
+        for (let i = 0; i < that.data.matchInfo.signUpList.length; i++) {
+          let signUpMap = that.data.matchInfo.signUpList[i];
+          if (signUpMap.openid == app.globalData.openid) {
+            foundSU = true;
+            break;
           }
         }
+        if (!foundSU) {
+          // 删除关联自己的openid
+          that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+            if (item === app.globalData.openid) {
+              arr.splice(index, 1);
+            }
+          });
+        }
+        tagDeleteTip = "删除报名成功";
       }
+      if ("askForLeave-tag" == tagId) {
+        // 删除自己的请假信息
+        that.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
+          if (index === dataIndex) {
+            arr.splice(index, 1);
+          }
+        });
+        // 如果在请假列表中没有自己的请假信息，将关联的openid删除（发布者除外）
+        let foundAFL = false;
+        for (let i = 0; i < that.data.matchInfo.askForLeaveList.length; i++) {
+          let askForLeaveMap = that.data.matchInfo.askForLeaveList[i];
+          if (askForLeaveMap.openid == app.globalData.openid) {
+            foundAFL = true;
+            break;
+          }
+        }
+        if (!foundAFL) {
+          // 删除关联自己的openid
+          that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+            if (item === app.globalData.openid) {
+              arr.splice(index, 1);
+            }
+          });
+        }
+        tagDeleteTip = "删除请假成功";
+      }
+      // 执行更新操作
+      if (that.data.publisher) {
+        console.log("local update");
+        db.collection(app.globalData.dbName).doc(that.data.matchId).update({
+          data: {
+            askForLeaveList: that.data.matchInfo.askForLeaveList,
+            signUpList: that.data.matchInfo.signUpList,
+            updateTime: that.data.matchInfo.updateTime,
+            referredOpeneIds: that.data.matchInfo.referredOpeneIds
+          },
+          success: function (res) {
+            that.notify('success', tagDeleteTip);
+          },
+          complete: function (res) {
+            that.setData({
+              matchInfo: that.data.matchInfo
+            });
+          }
+        });
+      } else {
+        console.log("cloud update, the other people cannot directly modify the match info");
+        // 调用云函数更新
+        wx.cloud.callFunction({
+          name: 'update',
+          data: {
+            id: that.data.matchId,
+            signUpList: that.data.matchInfo.signUpList,
+            askForLeaveList: that.data.matchInfo.askForLeaveList,
+            updateTime: that.data.matchInfo.updateTime,
+            referredOpeneIds: that.data.matchInfo.referredOpeneIds
+          },
+          success: function (res) {
+            console.log('[云函数] [update]: ', res);
+            that.notify('success', tagDeleteTip);
+          },
+          complete: function (res) {
+            that.setData({
+              matchInfo: that.data.matchInfo
+            });
+          }
+        });
+      }
+    }).catch(() => {
+      // on cancel
     });
   },
 
@@ -576,7 +622,7 @@ Page({
       id: 0,
       latitude: location.latitude,
       longitude: location.longitude,
-      width: 19,
+      width: 24,
       height: 24
     }];
     return markers;
@@ -584,230 +630,26 @@ Page({
 
   /**
    * ================================================================
-   * picker相关的代码，使用页面变量pageDate
+   * timePicker相关的代码
    * ================================================================
    */
-  pickerTap: function () {
-    
-    var date = new Date();
-    this.data.pageDate = date;
-  
-    var monthDay = [];
-    var hours = [];
-    var minute = [];
-    var currentHours = date.getHours();
-    var currentMinute = date.getMinutes();
-
-    // 月-日
-    for (var i = 0; i <= 28; i++) {
-      var date1 = new Date(date);
-      date1.setDate(date.getDate() + i);
-      var md = (date1.getMonth() + 1) + "-" + date1.getDate();
-      monthDay.push(md);
+  showTimePicker() {
+    if (!this.data.timeDisabled) {
+      this.setData({ showTimePickerFlag: true });
     }
-
-    var minuteIndex;
-    if (currentMinute > 0 && currentMinute <= 10) {
-      minuteIndex = 10;
-    } else if (currentMinute > 10 && currentMinute <= 20) {
-      minuteIndex = 20;
-    } else if (currentMinute > 20 && currentMinute <= 30) {
-      minuteIndex = 30;
-    } else if (currentMinute > 30 && currentMinute <= 40) {
-      minuteIndex = 40;
-    } else if (currentMinute > 40 && currentMinute <= 50) {
-      minuteIndex = 50;
-    } else {
-      minuteIndex = 60;
-    }
-
-    if (minuteIndex == 60) {
-      for (var i = currentHours + 1; i < 24; i++) {
-        hours.push(i);
-      }
-      for (var i = 0; i < 60; i += 10) {
-        minute.push(i);
-      }
-    } else {
-      for (var i = currentHours; i < 24; i++) {
-        hours.push(i);
-      }
-      for (var i = minuteIndex; i < 60; i += 10) {
-        minute.push(i);
-      }
-    }
-
-    var data = {
-      multiArray: this.data.multiArray,
-      multiIndex: this.data.multiIndex
-    };
-    data.multiArray[0] = monthDay;
-    data.multiArray[1] = hours;
-    data.multiArray[2] = minute;
-    this.setData(data);
   },
 
-  bindMultiPickerColumnChange: function (e) {
-    
-    var hours = [];
-    var minute = [];
-    var data = {
-      multiArray: this.data.multiArray,
-      multiIndex: this.data.multiIndex
-    };
-    // 把选择的对应值赋值给 multiIndex
-    data.multiIndex[e.detail.column] = e.detail.value;
-
-    // 然后再判断当前改变的是哪一列,如果是第1列改变
-    if (e.detail.column === 0) {
-      // 如果第一列滚动到第一行
-      if (e.detail.value === 0) {
-        this.loadData(hours, minute);
-      } else {
-        this.loadHoursMinute(hours, minute);
-      }
-
-      data.multiIndex[1] = 0;
-      data.multiIndex[2] = 0;
-
-      // 如果是第2列改变
-    } else if (e.detail.column === 1) {
-
-      // 如果第一列为今天
-      if (data.multiIndex[0] === 0) {
-        if (e.detail.value === 0) {
-          this.loadData(hours, minute);
-        } else {
-          this.loadMinute(hours, minute);
-        }
-        // 第一列不为今天
-      } else {
-        this.loadHoursMinute(hours, minute);
-      }
-      data.multiIndex[2] = 0;
-
-      // 如果是第3列改变
-    } else {
-      // 如果第一列为'今天'
-      if (data.multiIndex[0] === 0) {
-
-        // 如果第一列为 '今天'并且第二列为当前时间
-        if (data.multiIndex[1] === 0) {
-          this.loadData(hours, minute);
-        } else {
-          this.loadMinute(hours, minute);
-        }
-      } else {
-        this.loadHoursMinute(hours, minute);
-      }
-    }
-    data.multiArray[1] = hours;
-    data.multiArray[2] = minute;
-    this.setData(data);
+  onTimePickerCancel: function (event) {
+    this.setData({ showTimePickerFlag: false });
   },
 
-  bindStartMultiPickerChange: function (event) {
-    
-    var data = {
-      multiArray: this.data.multiArray,
-      multiIndex: this.data.multiIndex
-    };
-    var value = event.detail.value;
-    var monthDay = data.multiArray[0][value[0]];
-    var hour = data.multiArray[1][value[1]];
-    var minute = data.multiArray[2][value[2]];
-    if (hour < 10) {
-      hour = '0' + hour;
-    }
-    if (minute == 0) {
-      minute = '0' + minute;
-    }
-    var matchInfo = this.data.matchInfo;
-    matchInfo.time = monthDay + "/" + hour + ":" + minute;
+  onTimePickerConfirm: function (event) {
+    this.setData({ showTimePickerFlag: false });
+    const { detail, currentTarget } = event;
+    this.data.matchInfo.time = detail;
+    this.data.matchInfo.showTime = util.formatDate(new Date(detail), "yyyy-MM-dd hh:mm");
     this.setData({
-      matchInfo: matchInfo
+      matchInfo: this.data.matchInfo
     });
-  },
-
-  loadData: function (hours, minute) {
-    
-    var date = this.data.pageDate;
-    var currentHours = date.getHours();
-    var currentMinute = date.getMinutes();
-
-    var minuteIndex;
-    if (currentMinute > 0 && currentMinute <= 10) {
-      minuteIndex = 10;
-    } else if (currentMinute > 10 && currentMinute <= 20) {
-      minuteIndex = 20;
-    } else if (currentMinute > 20 && currentMinute <= 30) {
-      minuteIndex = 30;
-    } else if (currentMinute > 30 && currentMinute <= 40) {
-      minuteIndex = 40;
-    } else if (currentMinute > 40 && currentMinute <= 50) {
-      minuteIndex = 50;
-    } else {
-      minuteIndex = 60;
-    }
-
-    if (minuteIndex == 60) {
-      for (var i = currentHours + 1; i < 24; i++) {
-        hours.push(i);
-      }
-      for (var i = 0; i < 60; i += 10) {
-        minute.push(i);
-      }
-    } else {
-      for (var i = currentHours; i < 24; i++) {
-        hours.push(i);
-      }
-      for (var i = minuteIndex; i < 60; i += 10) {
-        minute.push(i);
-      }
-    }
-  },
-
-  loadHoursMinute: function (hours, minute) {
-    for (var i = 0; i < 24; i++) {
-      hours.push(i);
-    }
-    for (var i = 0; i < 60; i += 10) {
-      minute.push(i);
-    }
-  },
-
-  loadMinute: function (hours, minute) {
-
-    var date = this.data.pageDate;
-    var currentHours = date.getHours();
-    var currentMinute = date.getMinutes();
-
-    var minuteIndex;
-    if (currentMinute > 0 && currentMinute <= 10) {
-      minuteIndex = 10;
-    } else if (currentMinute > 10 && currentMinute <= 20) {
-      minuteIndex = 20;
-    } else if (currentMinute > 20 && currentMinute <= 30) {
-      minuteIndex = 30;
-    } else if (currentMinute > 30 && currentMinute <= 40) {
-      minuteIndex = 40;
-    } else if (currentMinute > 40 && currentMinute <= 50) {
-      minuteIndex = 50;
-    } else {
-      minuteIndex = 60;
-    }
-
-    if (minuteIndex == 60) {
-      for (var i = currentHours + 1; i < 24; i++) {
-        hours.push(i);
-      }
-    } else {
-      for (var i = currentHours; i < 24; i++) {
-        hours.push(i);
-      }
-    }
-    for (var i = 0; i < 60; i += 10) {
-      minute.push(i);
-    }
-  },
+  }
 })

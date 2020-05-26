@@ -3,6 +3,7 @@
 <view class="container">
   <view class="page-body">
     <van-notify id="van-notify"/>
+    <van-dialog id="van-dialog" />
 
     <view class="userInfo">
       <view class="userAvatar">
@@ -24,7 +25,7 @@
             </view>
           </view>
           <view slot="label">
-            <view>比赛时间：{{item.time}}</view>
+            <view>比赛时间：{{item.showTime}}</view>
             <view>报名人数：{{item.signUpList.length}}人</view>
             <view>请假人数：{{item.askForLeaveList.length}}人</view>
             <view>比赛地点：{{item.location.name}}（{{item.location.address}}）</view>

@@ -21,14 +21,15 @@
 }
 
 .tag-list {
+  background-color: #F6F6F6;
   width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   flex-wrap: wrap;
   padding-top: 20rpx;
-  padding-left: 20rpx;
-  padding-right: 20rpx;
+  padding-left: 10rpx;
+  padding-right: 10rpx;
 }
 
 .tag-item {
@@ -38,5 +39,10 @@
 
 #map {
   width: 100%; 
-  height: 200px;
+  height: 250px;
+}
+
+image {
+  width: 48rpx;
+  height: 48rpx;
 }

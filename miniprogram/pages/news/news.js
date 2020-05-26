@@ -3,6 +3,8 @@ const app = getApp();
 var util = require('../../common-js/util.js');
 const db = app.globalData.db;
 
+import Dialog from '../../miniprogram_npm/@vant/weapp/dialog/dialog';
+
 Page({
 
   data: {
@@ -76,12 +78,9 @@ Page({
     wx.setClipboardData({
       data: paster,
       success: function() {
-        wx.showModal({
-          content: '由于个人版微信小程序的开放限制，已将链接地址复制到剪贴板：\r\n' + paster + '\r\n请在其他浏览器内打开查看',
-          showCancel: false,
-          confirmText: '好的',
-          success(res) {}
-        });
+        Dialog.alert({
+          message: '由于个人版微信小程序的开放限制，已将链接地址复制到剪贴板：\r\n' + paster + '\r\n请在其他浏览器内打开查看',
+        }).then(() => {});
       }
     })
   },
@@ -115,8 +114,8 @@ Page({
         if (res.data.length > 0) {
           console.log(res.data[0].timestamp);
           let currentTime = (new Date()).getTime();
-          let hour12Time = 12 * 60 * 60 * 1000;
-          if (currentTime - res.data[0].timestamp > hour12Time) {
+          let hour6Time = 6 * 60 * 60 * 1000;
+          if (currentTime - res.data[0].timestamp > hour6Time) {
             that.loadNews(that);
           } else {
             that.data.news = res.data[0].newslist;
