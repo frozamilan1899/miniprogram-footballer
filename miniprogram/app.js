@@ -8,6 +8,7 @@ App({
     sceneId: "",
     previousMatchesInfoKey: "previousMatchesInfo",
     newsInfoKey: "newsInfo",
+    sharePicUrlKey: "sharePicUrl",
     sceneIdList: [1007, 1008, 1017, 1037, 1038, 1044, 1064],
     shared: false
   },

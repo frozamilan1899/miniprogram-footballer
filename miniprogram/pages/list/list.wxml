@@ -2,7 +2,7 @@
 
 <view class="container">
   <view class="page-body">
-    <van-notify id="van-notify"/>
+    <van-notify id="van-notify" />
     <van-dialog id="van-dialog" />
 
     <view class="userInfo">
@@ -14,7 +14,12 @@
 
     <van-button type="primary" size="large" bind:click="toEditPage"> 新比赛 </van-button>
 
-    <van-skeleton title row="3" loading="{{dataLoaded}}"/>
+    <view class="skeleton" hidden="{{dataLoaded}}">
+      <van-skeleton title row="4" loading="{{!dataLoaded}}" />
+    </view>
+    <view class="skeleton" hidden="{{dataLoaded}}">
+      <van-skeleton title row="4" loading="{{!dataLoaded}}" />
+    </view>
 
     <van-cell-group wx:if="{{matches.length}}" title="近期参与过的所有比赛">
       <van-swipe-cell right-width="{{65}}" wx:for="{{matches}}" wx:key="key" wx:for-item="item" data-index="{{index}}" async-close bind:close="onClose">

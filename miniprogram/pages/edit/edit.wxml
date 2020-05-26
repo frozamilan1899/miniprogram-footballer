@@ -2,14 +2,11 @@
 
 <view class="container">
   <view class="page-body">
+    <canvas canvas-id="shareBox" style="width:300px;height:0px;"></canvas>
     <van-notify id="van-notify" />
     <van-dialog id="van-dialog" />
     <van-popup show="{{showTimePickerFlag}}" position="bottom" custom-style="height:45%">
-      <van-datetime-picker id="datetime" type="datetime" value="{{currentDate}}"
-       min-date="{{minDate}}" min-hour="{{7}}" max-hour="{{22}}" 
-       formatter="{{formatter}}" filter="{{filter}}"
-       bind:cancel="onTimePickerCancel"
-       bind:confirm="onTimePickerConfirm"/>
+      <van-datetime-picker id="datetime" type="datetime" value="{{currentDate}}" min-date="{{minDate}}" formatter="{{formatter}}" filter="{{filter}}" bind:cancel="onTimePickerCancel" bind:confirm="onTimePickerConfirm" />
     </van-popup>
 
     <view class="btns">
@@ -17,7 +14,7 @@
       <van-button disabled="{{publishNewMatch || expired}}" type="default" size="large" open-type="share">转发比赛</van-button>
     </view>
 
-    <van-field clickable="{{true}}" readonly="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="输入比赛主题" autosize clearable="{{true}}" required="{{true}}" bind:input='getSubjectInput'/>
+    <van-field clickable="{{true}}" readonly="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="输入比赛主题" autosize clearable="{{true}}" required="{{true}}" bind:input='getSubjectInput' />
 
     <van-field is-link="{{!timeDisabled}}" readonly label="比赛时间" value="{{matchInfo.showTime}}" required="{{true}}" placeholder="选取比赛时间" bindtap="showTimePicker">
     </van-field>

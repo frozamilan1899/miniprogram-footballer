@@ -138,7 +138,8 @@ Page({
         }
         _this.data.dataLoaded = true;
         _this.setData({
-          matches: _this.data.matches
+          matches: _this.data.matches,
+          dataLoaded: _this.data.dataLoaded
         });
         // 缓存已获取到的比赛信息
         wx.setStorage({

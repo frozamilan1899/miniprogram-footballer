@@ -61,20 +61,16 @@ Page({
       if (type === 'day') {
         return `${value}日`;
       }
-      if (type === 'hour') {
-        return `${value}时`;
-      }
-      if (type === 'minute') {
-        return `${value}分`;
-      }
       return value;
     },
     filter(type, options) {
       if (type === 'minute') {
-        return options.filter((option) => option % 10 === 0);
+        return options.filter((option) => option % 30 === 0);
       }
       return options;
     },
+    // ------------------------------
+    sharePicUrl: "",
   },
 
   onLoad: function(options) {
@@ -199,6 +195,12 @@ Page({
       publishNewMatch: this.data.publishNewMatch
     });
   },
+  
+  onShow: function() {
+    if (app.globalData.shared) {
+      wx.hideHomeButton();
+    }
+  },
 
   onUnload: function() {
     this.renderPage(this, '发布比赛', false);
@@ -208,11 +210,12 @@ Page({
 
   onShareAppMessage: function (option) {
     console.log(option);
-    var shareTitle = this.data.matchInfo.subject;
+    this.drawShareImage();
+    var shareTitle = "愣着干嘛？踢球啊！";
     var sharePath = "/pages/edit/edit?id=" + this.data.matchId;  
     return {
       title: shareTitle,
-      imageUrl: "../../images/playground.png",
+      imageUrl: this.data.sharePicUrl,
       path: sharePath,
       success: function (res) {
         console.log(res);
@@ -430,13 +433,17 @@ Page({
       } else {
         // 本人从卡片跳转到首页
         wx.switchTab({
-          url: page_url
+          url: page_url,
+          success: function() {
+          }
         });
       }
     } else {
       // 非本人从卡片跳转到首页
       wx.switchTab({
-        url: page_url
+        url: page_url,
+        success: function () {
+        }
       });
     }
   },
@@ -651,5 +658,40 @@ Page({
     this.setData({
       matchInfo: this.data.matchInfo
     });
-  }
+  },
+
+  /**
+   * ================================================================
+   * canvas绘制图片相关的代码
+   * ================================================================
+   */
+  //绘制canvas图片
+  drawShareImage: function() {
+    //创建一个canvas对象
+    const ctx = wx.createCanvasContext('shareBox', this);
+    //绘制画布，并在回调中获取画布文件的临时路径
+    var that = this;
+    var width = wx.getSystemInfoSync().windowWidth;
+    ctx.draw(true, function () {
+      wx.canvasToTempFilePath({
+        x: 20,
+        y: 100,
+        width: width - 40,
+        height: 200,
+        canvasId: 'shareBox',
+        success(res) {
+          console.log(res)
+          if (res.tempFilePath) {
+            that.data.sharePicUrl = res.tempFilePath;
+            // 将绘制的图片缓存
+            wx.setStorageSync(app.globalData.sharePicUrlKey, res.tempFilePath);
+          }
+        }
+      });
+    });
+  },
+  //绘制图片封装
+  drawImage: function(ctx, url, x, y, w, h) {
+    ctx.drawImage(url, x * scale, y * scale, w * scale, h * scale);
+  },
 })
