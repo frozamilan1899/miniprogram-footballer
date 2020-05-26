@@ -6,7 +6,7 @@
     <van-notify id="van-notify" />
     <van-dialog id="van-dialog" />
     <van-popup show="{{showTimePickerFlag}}" position="bottom" custom-style="height:45%">
-      <van-datetime-picker id="datetime" type="datetime" value="{{currentDate}}" min-date="{{minDate}}" formatter="{{formatter}}" filter="{{filter}}" bind:cancel="onTimePickerCancel" bind:confirm="onTimePickerConfirm" />
+      <van-datetime-picker id="datetime" type="datetime" value="{{currentDate}}" min-date="{{minDate}}" formatter="{{formatter}}" bind:cancel="onTimePickerCancel" bind:confirm="onTimePickerConfirm" />
     </van-popup>
 
     <view class="btns">
@@ -14,12 +14,20 @@
       <van-button disabled="{{publishNewMatch || expired}}" type="default" size="large" open-type="share">转发比赛</van-button>
     </view>
 
-    <van-field clickable="{{true}}" readonly="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="输入比赛主题" autosize clearable="{{true}}" required="{{true}}" bind:input='getSubjectInput' />
+    <van-field clickable="{{!subjectDisabled}}" readonly="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="输入比赛主题" autosize clearable="{{true}}" required="{{true}}" bind:input='getSubjectInput'>
+    <view hidden="{{subjectDisabled}}" slot="right-icon">
+        <image class="" src="../../images/input.png" />
+      </view>
+    </van-field>
 
     <van-field is-link="{{!timeDisabled}}" readonly label="比赛时间" value="{{matchInfo.showTime}}" required="{{true}}" placeholder="选取比赛时间" bindtap="showTimePicker">
     </van-field>
 
-    <van-field clickable="{{true}}" label="报名列表" disabled="{{expired}}" placeholder="报名" bind:input='getSUInput' />
+    <van-field clickable="{{true}}" label="报名列表" disabled="{{expired}}" placeholder="报名" bind:input='getSUInput'>
+      <view hidden="{{expired}}" slot="right-icon">
+        <image class="" src="../../images/input.png" />
+      </view>
+    </van-field>
     <view class="tag-list" hidden="{{!(matchInfo.signUpList.length)}}">
       <view class="tag-item" wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item">
         <van-tag id="signUp-tag" closeable="{{item.close}}" size="large" bind:close="onClose" type="success" data-index="{{index}}">
@@ -28,7 +36,11 @@
       </view>
     </view>
 
-    <van-field clickable="{{true}}" label="请假列表" disabled="{{expired}}" placeholder="请假" bind:input='getAFLInput' />
+    <van-field clickable="{{true}}" label="请假列表" disabled="{{expired}}" placeholder="请假" bind:input='getAFLInput'>
+      <view hidden="{{expired}}" slot="right-icon">
+        <image class="" src="../../images/input.png" />
+      </view>
+    </van-field>
     <view class="tag-list" hidden="{{!(matchInfo.askForLeaveList.length)}}">
       <view class="tag-item" wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item">
         <van-tag id="askForLeave-tag" closeable="{{item.close}}" size="large" bind:close="onClose" type="success" data-index="{{index}}">
