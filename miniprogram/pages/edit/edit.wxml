@@ -6,15 +6,10 @@
     <van-notify id="van-notify" />
     <van-dialog id="van-dialog" />
     <van-popup show="{{showTimePickerFlag}}" position="bottom" custom-style="height:45%">
-      <van-datetime-picker id="datetime" type="datetime" value="{{currentDate}}" min-date="{{minDate}}" formatter="{{formatter}}" bind:cancel="onTimePickerCancel" bind:confirm="onTimePickerConfirm" />
+      <van-datetime-picker id="datetime" type="datetime" value="{{currentDate}}" min-date="{{minDate}}" formatter="{{formatter}}" filter="{{filter}}" bind:cancel="onTimePickerCancel" bind:confirm="onTimePickerConfirm" />
     </van-popup>
 
-    <view class="btns">
-      <van-button disabled="{{expired}}" type="primary" size="large" bind:click="submitMatchInfo">{{publishText}}</van-button>
-      <van-button disabled="{{publishNewMatch || expired}}" type="default" size="large" open-type="share">转发比赛</van-button>
-    </view>
-
-    <van-field clickable="{{!subjectDisabled}}" readonly="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="输入比赛主题" autosize clearable="{{true}}" required="{{true}}" bind:input='getSubjectInput'>
+    <van-field clickable="{{!subjectDisabled}}" readonly="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="输入比赛主题" autosize clearable="{{true}}" required="{{true}}" bind:input='setSubjectInput'>
     <view hidden="{{subjectDisabled}}" slot="right-icon">
         <image class="" src="../../images/input.png" />
       </view>
@@ -23,31 +18,33 @@
     <van-field is-link="{{!timeDisabled}}" readonly label="比赛时间" value="{{matchInfo.showTime}}" required="{{true}}" placeholder="选取比赛时间" bindtap="showTimePicker">
     </van-field>
 
-    <van-field clickable="{{true}}" label="报名列表" disabled="{{expired}}" placeholder="报名" bind:input='getSUInput'>
+    <van-field id="signUp" clickable="{{true}}" label="报名列表" disabled="{{expired}}" value="{{fieldSUValue}}" placeholder="报名" type="text" confirm-type="报名" bind:input='setSUInput' bind:blur="updateMatchInfo">
       <view hidden="{{expired}}" slot="right-icon">
         <image class="" src="../../images/input.png" />
       </view>
     </van-field>
     <view class="tag-list" hidden="{{!(matchInfo.signUpList.length)}}">
       <view class="tag-item" wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item">
-        <van-tag id="signUp-tag" closeable="{{item.close}}" size="large" bind:close="onClose" type="success" data-index="{{index}}">
+        <van-tag id="signUp-tag" closeable="{{item.close}}" size="large" bind:close="onTagClose" type="success" data-index="{{index}}">
           {{item.content}}
         </van-tag>
       </view>
     </view>
+    <text class="tag-total">已有{{matchInfo.signUpList.length}}人报名</text>
 
-    <van-field clickable="{{true}}" label="请假列表" disabled="{{expired}}" placeholder="请假" bind:input='getAFLInput'>
+    <van-field id="askForLeave" clickable="{{true}}" label="请假列表" disabled="{{expired}}" value="{{fieldAFLValue}}" placeholder="请假" type="text" confirm-type="请假" bind:input='setAFLInput' bind:blur="updateMatchInfo">
       <view hidden="{{expired}}" slot="right-icon">
         <image class="" src="../../images/input.png" />
       </view>
     </van-field>
     <view class="tag-list" hidden="{{!(matchInfo.askForLeaveList.length)}}">
       <view class="tag-item" wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item">
-        <van-tag id="askForLeave-tag" closeable="{{item.close}}" size="large" bind:close="onClose" type="success" data-index="{{index}}">
+        <van-tag id="askForLeave-tag" closeable="{{item.close}}" size="large" bind:close="onTagClose" type="success" data-index="{{index}}">
           {{item.content}}
         </van-tag>
       </view>
     </view>
+    <text class="tag-total">已有{{matchInfo.askForLeaveList.length}}人请假</text>
 
     <van-field readonly required="{{true}}" label="场地名称" placeholder="选取比赛位置" value="{{matchInfo.location.name}}" type="textarea" autosize bind:click-icon="chooseLocation">
       <view hidden="{{locationDisabled}}" slot="right-icon">
@@ -60,6 +57,12 @@
       </view>
     </van-field>
     <map id="map" longitude="{{matchInfo.location.longitude}}" latitude="{{matchInfo.location.latitude}}" scale="14" markers="{{markers}}" show-compass="true" enable-zoom="false" enable-scroll='{{false}}'></map>
+
+    <view class="btns">
+      <van-button wx:if="{{publisher}}" disabled="{{expired}}" type="primary" size="large" bind:click="submitMatchInfo">{{publishText}}</van-button>
+      <van-button wx:if="{{publisher}}" disabled="{{publishNewMatch || expired}}" type="default" size="large" open-type="share">转发比赛</van-button>
+      <van-button wx:else disabled="{{publishNewMatch || expired}}" type="primary" size="large" open-type="share">转发比赛</van-button>
+    </view>
 
     <van-divider contentPosition="center">相约同城，球场竞技</van-divider>
   </view>

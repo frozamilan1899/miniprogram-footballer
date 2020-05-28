@@ -1,7 +1,7 @@
 /**edit.wxss**/
 
 .page-body {
-  background: white;
+  background: #F6F6F6;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -22,19 +22,26 @@
 
 .tag-list {
   background-color: #F6F6F6;
-  width: 100%;
+  width: 98%;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   flex-wrap: wrap;
   padding-top: 20rpx;
   padding-left: 10rpx;
-  padding-right: 10rpx;
 }
 
 .tag-item {
   padding-bottom: 20rpx;
   margin-left: 20rpx;
+}
+
+.tag-total {
+  background-color: #F6F6F6; 
+  font-size: 28rpx; 
+  color: #8A8A8A;
+  margin-left: 36rpx;
+  margin-bottom: 10rpx;
 }
 
 #map {

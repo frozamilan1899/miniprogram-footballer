@@ -23,7 +23,6 @@ Page({
 
     if (app.globalData.openid && app.globalData.openid != '') {
       this.data.openid = app.globalData.openid;
-      this.data.dataLoaded = true;// 与onShow有关
     } else {
       var that = this;
       app.CallbackFn = data => {
@@ -34,7 +33,7 @@ Page({
     }
   },
 
-  onClose(e) {
+  onCellClose(e) {
     console.log('delete button tap');
     console.log(e.detail);
     var dataIndex = parseInt(e.target.dataset.index);
@@ -85,6 +84,7 @@ Page({
   },
 
   onQuery: function(_this) {
+    if (0 == _this.data.openid.length) return;
     const _ = db.command;
     wx.showLoading({
       title: '加载中...',
@@ -169,6 +169,7 @@ Page({
     var _id = matchInfo._id;
     var _openid = matchInfo._openid;
     var that = this;
+    // 判断比赛是否为自己发布的
     if (_openid != that.data.openid) {
       Dialog.confirm({
         title: '提示',

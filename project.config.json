@@ -16,11 +16,12 @@
 			"ignore": [],
 			"disablePlugins": [],
 			"outputPath": ""
-		}
+		},
+		"scopeDataCheck": false
 	},
 	"appid": "wx0d46f913bb3935e6",
 	"projectname": "Footballer",
-	"libVersion": "2.2.5",
+	"libVersion": "2.11.1",
 	"simulatorType": "wechat",
 	"simulatorPluginLibVersion": {},
 	"cloudfunctionTemplateRoot": "cloudfunctionTemplate",

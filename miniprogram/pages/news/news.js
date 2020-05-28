@@ -50,7 +50,6 @@ Page({
           _this.setData({
             news: _this.data.news
           });
-
           // 将新闻数据缓存入云数据库
           _this.cacheNews(_this.data.news);
         }
