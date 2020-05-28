@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "Footballer",
+  "navigationBarTitleText": "咱们球场见",
   "usingComponents": {
     "van-skeleton": "@vant/weapp/skeleton/index",
     "van-button": "@vant/weapp/button/index",

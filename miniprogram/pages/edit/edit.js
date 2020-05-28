@@ -338,6 +338,7 @@ Page({
     if (this.data.askForLeaveMap.content != '') {
       this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveMap);
     }
+    this.data.matchInfo.updateTime = new Date().getTime();
     var that = this;
     db.collection(app.globalData.dbName).add({
       data: that.data.matchInfo,
@@ -347,7 +348,7 @@ Page({
         });
         that.resetSUMap(that);
         that.resetAFLMap(that);
-        util.showToast(that.data.publishText + "成功");
+        that.notify("success", that.data.publishText + "成功");
       }
     });
     this.delayToHomePage(this);

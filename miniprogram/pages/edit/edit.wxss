@@ -27,7 +27,6 @@
   flex-direction: row;
   justify-content: flex-start;
   flex-wrap: wrap;
-  padding-top: 20rpx;
   padding-left: 10rpx;
 }
 
@@ -40,7 +39,8 @@
   background-color: #F6F6F6; 
   font-size: 28rpx; 
   color: #8A8A8A;
-  margin-left: 36rpx;
+  margin-top: 10rpx;
+  margin-left: 30rpx;
   margin-bottom: 10rpx;
 }
 

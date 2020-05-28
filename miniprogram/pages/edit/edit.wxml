@@ -23,6 +23,7 @@
         <image class="" src="../../images/input.png" />
       </view>
     </van-field>
+    <text class="tag-total" hidden="{{!(matchInfo.signUpList.length)}}">已有{{matchInfo.signUpList.length}}人报名</text>
     <view class="tag-list" hidden="{{!(matchInfo.signUpList.length)}}">
       <view class="tag-item" wx:for="{{matchInfo.signUpList}}" wx:key="key" wx:for-item="item">
         <van-tag id="signUp-tag" closeable="{{item.close}}" size="large" bind:close="onTagClose" type="success" data-index="{{index}}">
@@ -30,13 +31,13 @@
         </van-tag>
       </view>
     </view>
-    <text class="tag-total">已有{{matchInfo.signUpList.length}}人报名</text>
 
     <van-field id="askForLeave" clickable="{{true}}" label="请假列表" disabled="{{expired}}" value="{{fieldAFLValue}}" placeholder="请假" type="text" confirm-type="请假" bind:input='setAFLInput' bind:blur="updateMatchInfo">
       <view hidden="{{expired}}" slot="right-icon">
         <image class="" src="../../images/input.png" />
       </view>
     </van-field>
+    <text class="tag-total" hidden="{{!(matchInfo.askForLeaveList.length)}}">已有{{matchInfo.askForLeaveList.length}}人请假</text>
     <view class="tag-list" hidden="{{!(matchInfo.askForLeaveList.length)}}">
       <view class="tag-item" wx:for="{{matchInfo.askForLeaveList}}" wx:key="key" wx:for-item="item">
         <van-tag id="askForLeave-tag" closeable="{{item.close}}" size="large" bind:close="onTagClose" type="success" data-index="{{index}}">
@@ -44,7 +45,6 @@
         </van-tag>
       </view>
     </view>
-    <text class="tag-total">已有{{matchInfo.askForLeaveList.length}}人请假</text>
 
     <van-field readonly required="{{true}}" label="场地名称" placeholder="选取比赛位置" value="{{matchInfo.location.name}}" type="textarea" autosize bind:click-icon="chooseLocation">
       <view hidden="{{locationDisabled}}" slot="right-icon">

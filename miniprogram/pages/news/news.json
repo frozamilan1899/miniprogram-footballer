@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "Footballer",
+  "navigationBarTitleText": "国足新闻",
   "usingComponents": {
     "van-cell": "@vant/weapp/cell/index",
     "van-cell-group": "@vant/weapp/cell-group/index",
