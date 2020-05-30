@@ -1,6 +1,5 @@
 // news.js
 const app = getApp();
-var util = require('../../common-js/util.js');
 const db = app.globalData.db;
 
 import Dialog from '../../miniprogram_npm/@vant/weapp/dialog/dialog';
@@ -9,7 +8,6 @@ Page({
 
   data: {
     news: [],
-    parameters: ""
   },
 
   onLoad: function (options) {

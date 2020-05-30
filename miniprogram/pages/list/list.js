@@ -1,6 +1,5 @@
 //list.js
 const app = getApp();
-var util = require('../../common-js/util.js');
 const db = app.globalData.db;
 
 import Notify from '../../miniprogram_npm/@vant/weapp/notify/notify';
@@ -33,22 +32,6 @@ Page({
     }
   },
 
-  onCellClose(e) {
-    console.log('delete button tap');
-    console.log(e.detail);
-    var dataIndex = parseInt(e.target.dataset.index);
-    const { position, instance } = e.detail;
-    switch (position) {
-      case 'left':
-      case 'cell':
-        instance.close();
-        break;
-      case 'right':
-        this.deleteMatch(dataIndex, instance);
-        break;
-    }
-  },
-
   onShow: function() {
     console.log("list->onShow");
     if (!this.data.dataLoaded) {
@@ -63,7 +46,9 @@ Page({
 
   onReachBottom: function() {
     console.log("list->onReachBottom");
-    Notify({ type: 'success', message: '左滑可以删除比赛，进入详情可以转发比赛', duration: 3000});
+    if (this.data.matches.length > 0) {
+      Notify({ type: 'success', message: '左滑可以删除比赛，进入详情可以转发比赛', duration: 3000 });
+    }
   },
 
   onShareAppMessage: function (option) {
@@ -101,12 +86,14 @@ Page({
       success: res => {
         console.log('[数据库] [查询记录] 成功: ', res.data);
         var matches = res.data;
-        if (matches.length > 0) {
-          _this.data.matches = matches;
-          // 获取比赛缓存信息
+        _this.data.matches = matches;
+        if (0 == _this.data.matches.length) {
+          _this.notify('primary', '暂时没有历史比赛数据');
+        } else {
+          // 从缓存中获取比赛信息
           var cachedMatches = wx.getStorageSync(app.globalData.previousMatchesInfoKey);
-          // 对比是否有新增数据
           if (cachedMatches && cachedMatches.length > 0) {
+            // 对比是否有新增数据
             for (let i = 0; i < _this.data.matches.length; i++) {
               var match = _this.data.matches[i];
               var existedInCache = false;
@@ -118,7 +105,7 @@ Page({
                   }
                   existedInCache = true;
                   break;
-                } 
+                }
               }
               if (!existedInCache) {
                 _this.data.matches[i].hasNewMatchInfo = true;
@@ -132,9 +119,6 @@ Page({
               _this.data.matches[i].expired = true;
             }
           }
-        } else {
-          util.showToast("暂时没有历史比赛数据");
-          _this.data.matches = matches;
         }
         _this.data.dataLoaded = true;
         _this.setData({
@@ -149,7 +133,7 @@ Page({
       },
       fail: err => {
         console.error('[数据库] [查询记录] 失败：', err);
-        util.showToast("获取比赛数据失败");   
+        _this.notify('warning', '获取比赛数据失败');
       },
       complete: res => {
         wx.hideLoading();
@@ -162,6 +146,21 @@ Page({
       wx.hideLoading();
       wx.stopPullDownRefresh();
     }, 10000);
+  },
+
+  onCellClose(e) {
+    console.log('delete button tap');
+    var dataIndex = parseInt(e.target.dataset.index);
+    const { position, instance } = e.detail;
+    switch (position) {
+      case 'left':
+      case 'cell':
+        instance.close();
+        break;
+      case 'right':
+        this.deleteMatch(dataIndex, instance);
+        break;
+    }
   },
 
   deleteMatch: function (dataIndex, instance) {
@@ -211,10 +210,10 @@ Page({
           success: function (res) {
             console.log('[云函数] [update]: ', res);
             that.onQuery(that);
-            util.showToast("删除比赛数据成功");
+            that.notify('success', '删除比赛数据成功');
           },
           fail: function () {
-            util.showToast("删除比赛数据失败");
+            that.notify('warning', '删除比赛数据失败');
           },
           complete: function () {
             wx.hideLoading();
@@ -237,10 +236,10 @@ Page({
         db.collection(app.globalData.dbName).doc(_id).remove({
           success: function() {
             that.onQuery(that);
-            util.showToast("删除比赛成功");
+            that.notify('success', '删除比赛成功');
           },
           fail: function () {
-            util.showToast("删除比赛失败");
+            that.notify('warning', '删除比赛失败');
           },
           complete: function () {
             wx.hideLoading();
@@ -259,5 +258,13 @@ Page({
     wx.navigateTo({
       url: page_url,
     })
-  }
+  },
+
+  notify: function (tp, msg) {
+    Notify({
+      type: tp,
+      message: msg,
+      duration: 2000
+    });
+  },
 })

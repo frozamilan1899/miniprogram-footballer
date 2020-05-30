@@ -34,7 +34,6 @@ Page({
     },
     publishNewMatch: true,
     publisher: true,
-    publishText: '发布比赛',
     subjectDisabled: false,
     timeDisabled: false,
     locationDisabled: false,
@@ -108,10 +107,11 @@ Page({
   },
 
   onUnload: function() {
-    this.renderPage(this, '发布比赛', false);
+    this.renderPage(this, false);
     this.data.publishNewMatch = true;
     this.data.publisher = true;
     this.data.expired = false;
+    this.data.showTimePickerFlag = false;
   },
 
   onShareAppMessage: function(option) {
@@ -143,6 +143,7 @@ Page({
     }).get({
       success: res => {
         that.data.matchInfo = res.data[0];
+        that.checkMatchExpired(that);
         that.adjustUIItems(that);
       },
       fail: res => {
@@ -171,23 +172,32 @@ Page({
         break;
       }
     }
+    this.checkMatchExpired(this);
     this.adjustUIItems(this);
     this.queryAndSetLoacation(this);
+  },
+
+  checkMatchExpired: function(_this) {
+    // 检查本场比赛是否已过期
+    var currentTime = new Date().getTime();
+    if (currentTime > _this.data.matchInfo.time) {
+      _this.data.expired = true;
+    } else {
+      _this.data.expired = false;
+    }
   },
 
   adjustUIItems: function(_this) {
     // 检查本场比赛是否为自己发布的比赛
     if (_this.data.matchInfo._openid != app.globalData.openid) {
       _this.data.publisher = false;
-      _this.renderPage(_this, '报名/请假', true);
+      _this.renderPage(_this, true);
     }
-    // 检查本场比赛是否已过期，若已过期将部分控件设置为不可用
-    if (_this.data.matchInfo.expired) {
-      _this.data.expired = true;
-      _this.renderPage(_this, '发布比赛', true);
+    // 若本场比赛已过期将部分控件设置为不可用
+    if (_this.data.expired) {
+      _this.renderPage(_this, true);
       _this.notify('warning', '比赛已过期');
     } else {
-      _this.data.expired = false;
       _this.checkTagListForClose(_this);
     }
   },
@@ -217,16 +227,14 @@ Page({
     });
   },
 
-  renderPage: function(_this, pText, disabled) {
+  renderPage: function(_this, disabled) {
     // 渲染页面
     if (!_this.data.publisher || _this.data.expired) {
-      _this.data.publishText = pText;
       _this.data.subjectDisabled = disabled;
       _this.data.timeDisabled = disabled;
       _this.data.locationDisabled = disabled;
       _this.setData({
         publisher: _this.data.publisher,
-        publishText: _this.data.publishText,
         subjectDisabled: _this.data.subjectDisabled,
         timeDisabled: _this.data.timeDisabled,
         locationDisabled: _this.data.locationDisabled,
@@ -348,7 +356,7 @@ Page({
         });
         that.resetSUMap(that);
         that.resetAFLMap(that);
-        that.notify("success", that.data.publishText + "成功");
+        that.notify("success", "发布比赛成功");
       }
     });
     this.delayToHomePage(this);
@@ -366,7 +374,7 @@ Page({
       console.log('input SU or AFL data');
       return;
     }
-    var successText = this.data.publishText;
+    var successText = '发布比赛';
     if (e) {
       var tagId = e.target.id;
       if ("signUp" == tagId) { successText = '报名'; }
@@ -388,6 +396,15 @@ Page({
     // 执行更新操作
     if (this.data.publisher) {
       // 自己可以更新全部比赛数据
+      if (e) {
+        var tagId = e.target.id;
+        if ("signUp" == tagId && '' === this.data.signUpMap.content) { 
+          return;
+        }
+        if ("askForLeave" == tagId && '' === this.data.askForLeaveMap.content) {
+          return;
+        }
+      }
       var _this = this;
       this.updateMatchInfoViaDB(this,
         success => function(res) {
@@ -405,6 +422,7 @@ Page({
       this.delayToHomePage(this);
     } else {
       // 其他人只能更新报名或者请假数据
+      // 如果报名和请假信息都为空
       if ('' === this.data.signUpMap.content && '' === this.data.askForLeaveMap.content) {
         this.notify('danger', '请追加报名或请假');
         return;

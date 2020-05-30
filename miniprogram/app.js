@@ -23,7 +23,9 @@ App({
       console.error('请使用 2.2.3 或以上的基础库以使用云能力');
       wx.showModal({
         title: '提示',
-        content: '基础库2.2.3版本以上才能使用云能力，请升级微信客户端至',
+        content: '基础库2.2.3版本以上才能使用云能力，请升级微信客户端',
+        showCancel: false,
+        confirmText: '确定'
       })
     } else {
       // 云开发初始化
