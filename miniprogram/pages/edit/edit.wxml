@@ -10,7 +10,7 @@
     </van-popup>
 
     <view hidden="{{hideAuthMsgBtnFlag}}">
-      <van-button type="primary" size="large" bind:click="onUserAuthMsg">授权订阅「报名进展消息」</van-button>
+      <van-button type="primary" size="large" bind:click="onUserAuthMsg">订阅「报名进展通知」消息</van-button>
     </view>
 
     <van-field clickable="{{!subjectDisabled}}" readonly="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="输入比赛主题" autosize clearable="{{true}}" required="{{!expired && publisher}}" bind:input='setSubjectInput'>
