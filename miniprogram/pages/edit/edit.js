@@ -107,8 +107,15 @@ Page({
       });
     }
 
-    // 获取订阅消息的授权状态
-    this.queryAuthRecord(this);
+    // 是否从通知服务中的小程序模板启动
+    if (app.globalData.needAuthMsg) {
+      //如果是，表明已经接收到一次订阅消息，重新提示用户授权
+      this.data.hideAuthMsgBtnFlag = false;
+      this.updateAuthRecord(this, false);
+    } else {
+      // 如果不是，获取订阅消息的授权状态并按需显示授权按钮
+      this.queryAuthRecord(this);
+    } 
   },
 
   onUnload: function() {
@@ -949,18 +956,21 @@ Page({
     console.log("send template message");
     for(let i = 0; i < _this.data.matchInfo.referredOpeneIds.length; i++) {
       let openid = _this.data.matchInfo.referredOpeneIds[i];
-      wx.cloud.callFunction({
-        name: 'send_template',
-        data: {
-          openid: openid,
-          matchId: _this.data.matchId,
-          subject: _this.data.matchInfo.subject,
-          showTime: _this.data.matchInfo.showTime,
-          detail: detail,
-          sighUpCount: _this.data.matchInfo.signUpList.length,
-          position: _this.data.matchInfo.location.name
-        }
-      });
+      // 只发送给除自己之外的参与者
+      if (openid != app.globalData.openid) {
+        wx.cloud.callFunction({
+          name: 'send_template',
+          data: {
+            openid: openid,
+            matchId: _this.data.matchId,
+            subject: _this.data.matchInfo.subject,
+            showTime: _this.data.matchInfo.showTime,
+            detail: detail,
+            sighUpCount: _this.data.matchInfo.signUpList.length,
+            position: _this.data.matchInfo.location.name
+          }
+        });
+      }
     }
   }
 })

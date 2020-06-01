@@ -10,7 +10,8 @@ App({
     newsInfoKey: "newsInfo",
     sharePicUrlKey: "sharePicUrl",
     sceneIdList: [1007, 1008, 1014, 1017, 1037, 1038, 1044, 1064],
-    shared: false
+    shared: false,
+    needAuthMsg: false,
   },
 
   onLaunch: function (options) {
@@ -57,6 +58,7 @@ App({
     console.log('app onShow option-----' + option);
     this.globalData.sceneId = options.scene;
     this.onJudgeEntryScene();
+    this.checkIfNeedAuthMsg();
   },
 
   onJudgeEntryScene: function() {
@@ -65,6 +67,17 @@ App({
       this.globalData.shared = true;
     } else {
       this.globalData.shared = false;
+    }
+  },
+
+  checkIfNeedAuthMsg: function() {
+    console.log('check if need auth message');
+    if (this.globalData.sceneId == '1014') {
+      console.log('yes, auth');
+      this.globalData.needAuthMsg = true;
+    } else {
+      console.log('no, skip');
+      this.globalData.needAuthMsg = false;
     }
   }
 })
