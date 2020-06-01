@@ -199,7 +199,7 @@ Page({
 
         // 调用云函数更新
         wx.cloud.callFunction({
-          name: 'update',
+          name: 'update_match',
           data: {
             id: _id,
             signUpList: matchInfo.signUpList,

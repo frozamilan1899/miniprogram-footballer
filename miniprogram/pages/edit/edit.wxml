@@ -9,6 +9,10 @@
       <van-datetime-picker id="datetime" type="datetime" value="{{currentDate}}" min-date="{{minDate}}" formatter="{{formatter}}" filter="{{filter}}" bind:cancel="onTimePickerCancel" bind:confirm="onTimePickerConfirm" />
     </van-popup>
 
+    <view hidden="{{hideAuthMsgBtnFlag}}">
+      <van-button type="primary" size="large" bind:click="onUserAuthMsg">授权订阅报名进展消息</van-button>
+    </view>
+
     <van-field clickable="{{!subjectDisabled}}" readonly="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="输入比赛主题" autosize clearable="{{true}}" required="{{!expired && publisher}}" bind:input='setSubjectInput'>
     <view hidden="{{subjectDisabled}}" slot="right-icon">
         <image class="" src="../../images/input.png" />

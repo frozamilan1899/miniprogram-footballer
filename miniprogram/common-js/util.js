@@ -1,5 +1,12 @@
 // util.js
 
+function get_object_all_attribute(data) {
+  var all_attribute_value = [];
+  for (var key in data)
+    all_attribute_value.push(data[key]);
+  return all_attribute_value;
+}
+
 //删除左右两端的空格
 function trim(str) { 
   return str.replace(/(^\s*)|(\s*$)/g, "");
@@ -76,6 +83,7 @@ function padLeftZero(str) {
 }
 
 module.exports = {
+  get_object_all_attribute: get_object_all_attribute,
   trim: trim,
   ltrim: ltrim,
   rtrim: rtrim,

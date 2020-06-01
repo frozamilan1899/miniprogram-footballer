@@ -72,6 +72,8 @@ Page({
     },
     // ------------------------------
     sharePicUrl: "",
+    // ------------------------------
+    hideAuthMsgBtnFlag: true
   },
 
   onLoad: function(options) {
@@ -104,6 +106,9 @@ Page({
         withShareTicket: true
       });
     }
+
+    // 获取订阅消息的授权状态
+    this.queryAuthRecord(this);
   },
 
   onUnload: function() {
@@ -142,9 +147,11 @@ Page({
       _id: that.data.matchId
     }).get({
       success: res => {
-        that.data.matchInfo = res.data[0];
-        that.checkMatchExpired(that);
-        that.adjustUIItems(that);
+        if (res.data.length > 0) {
+          that.data.matchInfo = res.data[0];
+          that.checkMatchExpired(that);
+          that.adjustUIItems(that);
+        }
       },
       fail: res => {
         console.log(res);
@@ -417,9 +424,17 @@ Page({
           });
           _this.resetSUMap(_this);
           _this.resetAFLMap(_this);
+          if (e) {
+            _this.sendTemplateMsg(_this, "有人" + successText + "了");
+          } else {
+            _this.sendTemplateMsg(_this, "比赛信息更新了");
+          }
         }
       );
-      this.delayToHomePage(this);
+      // 如果不是点了键盘的完成，而是发布比赛，则需要自动跳转页面
+      if (!e) {
+        this.delayToHomePage(this);
+      }
     } else {
       // 其他人只能更新报名或者请假数据
       // 如果报名和请假信息都为空
@@ -439,6 +454,7 @@ Page({
           });
           _this.resetSUMap(_this);
           _this.resetAFLMap(_this);
+          _this.sendTemplateMsg(_this, "有人" + successText + "了");
         }
       );
     }
@@ -528,7 +544,7 @@ Page({
     console.log("cloud update");
     _this.data.matchInfo.updateTime = new Date().getTime();
     wx.cloud.callFunction({
-      name: 'update',
+      name: 'update_match',
       data: {
         id: _this.data.matchId,
         signUpList: _this.data.matchInfo.signUpList,
@@ -609,7 +625,7 @@ Page({
             }
           });
         }
-        tagDeleteTip = "删除报名成功";
+        tagDeleteTip = "取消报名";
       }
       if ("askForLeave-tag" == tagId) {
         // 删除自己的请假信息
@@ -635,14 +651,14 @@ Page({
             }
           });
         }
-        tagDeleteTip = "删除请假成功";
+        tagDeleteTip = "取消请假";
       }
       // 执行更新操作
       if (that.data.publisher) {
         that.updateMatchInfoViaDB(that,
           success => function(res) {
             console.log('[update]: ', res);
-            that.notify('success', tagDeleteTip);
+            that.notify('success', tagDeleteTip + "成功");
           },
           complete => function(res) {
             that.setData({
@@ -650,13 +666,14 @@ Page({
             });
             that.resetSUMap(that);
             that.resetAFLMap(that);
+            that.sendTemplateMsg(that, "有人" + tagDeleteTip + "了");
           }
         );
       } else {
         that.updateMatchInfoViaCloud(that,
           success => function(res) {
             console.log('[云函数] [update]: ', res);
-            that.notify('success', tagDeleteTip);
+            that.notify('success', tagDeleteTip + "成功");
           },
           complete => function() {
             that.setData({
@@ -664,6 +681,7 @@ Page({
             });
             that.resetSUMap(that);
             that.resetAFLMap(that);
+            that.sendTemplateMsg(that, "有人" + tagDeleteTip + "了");
           }
         );
       }
@@ -815,4 +833,134 @@ Page({
   drawImage: function(ctx, url, x, y, w, h) {
     ctx.drawImage(url, x * scale, y * scale, w * scale, h * scale);
   },
+
+  /**
+   * ================================================================
+   * 订阅消息相关的代码
+   * ================================================================
+   */
+  showAuthMsgBtn: function(_this) {
+    _this.setData({
+      hideAuthMsgBtnFlag: _this.data.hideAuthMsgBtnFlag
+    });
+  },
+
+  hideAuthMsgBtn: function (_this) {
+    _this.setData({
+      hideAuthMsgBtnFlag: _this.data.hideAuthMsgBtnFlag
+    });
+  },
+
+  switchAuthMsgBtn: function(_this, state) {
+    if (state) {
+      _this.hideAuthMsgBtn(_this);
+    } else {
+      _this.showAuthMsgBtn(_this);
+    }
+  },
+
+  onUserAuthMsg: function () {
+    // 获取用户对订阅消息的授权
+    var that = this;
+    wx.requestSubscribeMessage({
+      tmplIds: ['9pBjK8fdwRqcjTXBvgL7ueMpQnSiq_xvw8caYB08hTg'],
+      success: function (res) {
+        console.log(res);
+        var all_attribute_value = util.get_object_all_attribute(res);
+        var state = false;
+        for (let i = 0; i < all_attribute_value.length; i++) {
+          let result = all_attribute_value[i];
+          if (result == 'accept') {
+            console.log('已授权接收订阅消息');
+            state = true;
+            break;
+          } else if (result == 'reject') {
+            console.log('已拒绝接收订阅消息');
+            that.notify('warning', '拒绝后将接收不到报名进展消息');
+            state = false;
+            break;
+          }
+        }
+        that.data.hideAuthMsgBtnFlag = state;
+        that.updateAuthRecord(that, state);
+      },
+      fail: function (res) {
+        console.log('授权订阅消息失败');
+        console.log(res);
+      },
+      complete: function (res) {
+        console.log('完成订阅消息的授权');
+      },
+    });
+  },
+
+  queryAuthRecord: function (_this) {
+    console.log("query auth record");
+    db.collection("authorizations").where({
+      _openid: app.globalData.openid
+    }).get({
+      success: function (res) {
+        console.log(res);
+        if (res.data.length > 0) {
+          _this.data.hideAuthMsgBtnFlag = res.data[0].state;
+          _this.switchAuthMsgBtn(_this, res.data[0].state);
+        } else {
+          // 该用户没有授权记录
+          _this.data.hideAuthMsgBtnFlag = false;
+          _this.storeAuthRecord(_this, false);
+        }
+      },
+      fail: function (res) {
+        console.log(res);
+      }
+    });
+  },
+
+  storeAuthRecord: function (_this, state) {
+    console.log("store auth record");
+    db.collection("authorizations").add({
+      data: {
+        state: state
+      },
+      success: function (res) {
+        console.log(res);
+        _this.switchAuthMsgBtn(_this, state);
+      }
+    });
+  },
+
+  updateAuthRecord: function (_this, state) {
+    console.log("update auth record");
+    db.collection("authorizations").where({
+      _openid: app.globalData.openid
+    }).update({
+      data: {
+        state: state
+      },
+      success: function (res) {
+        console.log(res);
+        _this.switchAuthMsgBtn(_this, state);
+      }
+    });
+  },
+
+  sendTemplateMsg: function (_this, detail) {
+    // 调用云函数发送订阅消息
+    console.log("send template message");
+    for(let i = 0; i < _this.data.matchInfo.referredOpeneIds.length; i++) {
+      let openid = _this.data.matchInfo.referredOpeneIds[i];
+      wx.cloud.callFunction({
+        name: 'send_template',
+        data: {
+          openid: openid,
+          matchId: _this.data.matchId,
+          subject: _this.data.matchInfo.subject,
+          showTime: _this.data.matchInfo.showTime,
+          detail: detail,
+          sighUpCount: _this.data.matchInfo.signUpList.length,
+          position: _this.data.matchInfo.location.name
+        }
+      });
+    }
+  }
 })
