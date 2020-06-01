@@ -28,8 +28,7 @@ exports.main = async (event, context) => {
           value: event.position
         }
       },
-      templateId: '9pBjK8fdwRqcjTXBvgL7ueMpQnSiq_xvw8caYB08hTg',
-      miniprogramState: 'trial'
+      templateId: '9pBjK8fdwRqcjTXBvgL7ueMpQnSiq_xvw8caYB08hTg'
     });
     console.log(result);
     return result;

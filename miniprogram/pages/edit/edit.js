@@ -109,9 +109,10 @@ Page({
 
     // 是否从通知服务中的小程序模板启动
     if (app.globalData.needAuthMsg) {
-      //如果是，表明已经接收到一次订阅消息，重新提示用户授权
+      // 如果是，表明已经接收到一次订阅消息，更改自己的订阅消息状态
+      // 其实如果接收到，别人已经更改过一次，这里属于二次验证
       this.data.hideAuthMsgBtnFlag = false;
-      this.updateAuthRecord(this, false);
+      this.updateAuthRecord(this, false, true);
     } else {
       // 如果不是，获取订阅消息的授权状态并按需显示授权按钮
       this.queryAuthRecord(this);
@@ -124,6 +125,7 @@ Page({
     this.data.publisher = true;
     this.data.expired = false;
     this.data.showTimePickerFlag = false;
+    this.data.hideAuthMsgBtnFlag = true;
   },
 
   onShareAppMessage: function(option) {
@@ -889,7 +891,7 @@ Page({
           }
         }
         that.data.hideAuthMsgBtnFlag = state;
-        that.updateAuthRecord(that, state);
+        that.updateAuthRecord(that, state, true);
       },
       fail: function (res) {
         console.log('授权订阅消息失败');
@@ -914,7 +916,7 @@ Page({
         } else {
           // 该用户没有授权记录
           _this.data.hideAuthMsgBtnFlag = false;
-          _this.storeAuthRecord(_this, false);
+          _this.storeAuthRecord(_this, false, true);
         }
       },
       fail: function (res) {
@@ -923,7 +925,7 @@ Page({
     });
   },
 
-  storeAuthRecord: function (_this, state) {
+  storeAuthRecord: function (_this, state, resetUI) {
     console.log("store auth record");
     db.collection("authorizations").add({
       data: {
@@ -931,12 +933,14 @@ Page({
       },
       success: function (res) {
         console.log(res);
-        _this.switchAuthMsgBtn(_this, state);
+        if (resetUI) {
+          _this.switchAuthMsgBtn(_this, state);
+        }
       }
     });
   },
 
-  updateAuthRecord: function (_this, state) {
+  updateAuthRecord: function (_this, state, resetUI) {
     console.log("update auth record");
     db.collection("authorizations").where({
       _openid: app.globalData.openid
@@ -946,7 +950,9 @@ Page({
       },
       success: function (res) {
         console.log(res);
-        _this.switchAuthMsgBtn(_this, state);
+        if (resetUI) {
+          _this.switchAuthMsgBtn(_this, state);
+        }
       }
     });
   },
@@ -968,6 +974,21 @@ Page({
             detail: detail,
             sighUpCount: _this.data.matchInfo.signUpList.length,
             position: _this.data.matchInfo.location.name
+          },
+          success: function(res) {
+            _this.data.hideAuthMsgBtnFlag = false;
+            // 更改别人的订阅消息状态
+            console.log("update the other user's auth record");
+            db.collection("authorizations").where({
+              _openid: openid
+            }).update({
+              data: {
+                state: false
+              },
+              success: function (res) {
+                console.log(res);
+              }
+            });
           }
         });
       }
