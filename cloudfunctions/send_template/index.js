@@ -29,7 +29,7 @@ exports.main = async (event, context) => {
         }
       },
       templateId: '9pBjK8fdwRqcjTXBvgL7ueMpQnSiq_xvw8caYB08hTg',
-      miniprogramState: 'developer'
+      miniprogramState: 'trial'
     });
     console.log(result);
     return result;
