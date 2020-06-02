@@ -972,11 +972,11 @@ Page({
             openid: other_openid,
             page: "/pages/edit/edit",
             parameter: "?id="+_this.data.matchId,
-            subject: _this.data.matchInfo.subject,
+            subject: util.getSubStrBylen(_this.data.matchInfo.subject, 17),
             showTime: _this.data.matchInfo.showTime,
             detail: detail,
             sighUpCount: _this.data.matchInfo.signUpList.length,
-            position: _this.data.matchInfo.location.name
+            position: util.getSubStrBylen(_this.data.matchInfo.location.name, 17)
           },
           success: function(res) {
             // 更改别人的订阅消息状态, 需要调用云函数

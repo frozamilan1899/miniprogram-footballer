@@ -1,5 +1,16 @@
 // util.js
 
+function getSubStrBylen(str, len) {
+  var subStr = '';
+  if (!str) return subStr;
+  if (str.length <= len) {
+    return str;
+  } else {
+    subStr = str.substr(0, len) + '...';
+  }
+  return subStr;
+}
+
 function get_object_all_attribute(data) {
   var all_attribute_value = [];
   for (var key in data)
@@ -83,6 +94,7 @@ function padLeftZero(str) {
 }
 
 module.exports = {
+  getSubStrBylen: getSubStrBylen,
   get_object_all_attribute: get_object_all_attribute,
   trim: trim,
   ltrim: ltrim,
