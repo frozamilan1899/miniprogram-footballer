@@ -164,6 +164,7 @@ Page({
       },
       fail: res => {
         console.log(res);
+        that.notify('warning', '当前比赛已被发布者删除');
       },
       complete: res => {
         that.queryAndSetLoacation(that);
