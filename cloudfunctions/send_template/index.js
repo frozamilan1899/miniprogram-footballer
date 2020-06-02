@@ -8,9 +8,10 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   console.log(event);
   try {
+    var pagePath = event.page + event.parameter;
     const result = await cloud.openapi.subscribeMessage.send({
       touser: event.openid,
-      page: "/pages/edit/edit?id=" + event.matchId,
+      page: pagePath,
       data: {
         thing1: {
           value: event.subject

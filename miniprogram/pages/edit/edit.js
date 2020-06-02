@@ -964,11 +964,13 @@ Page({
       let openid = _this.data.matchInfo.referredOpeneIds[i];
       // 只发送给除自己之外的参与者
       if (openid != app.globalData.openid) {
+        var other_openid = openid;
         wx.cloud.callFunction({
           name: 'send_template',
           data: {
-            openid: openid,
-            matchId: _this.data.matchId,
+            openid: other_openid,
+            page: "/pages/edit/edit",
+            parameter: "?id="+_this.data.matchId,
             subject: _this.data.matchInfo.subject,
             showTime: _this.data.matchInfo.showTime,
             detail: detail,
@@ -976,16 +978,15 @@ Page({
             position: _this.data.matchInfo.location.name
           },
           success: function(res) {
-            _this.data.hideAuthMsgBtnFlag = false;
-            // 更改别人的订阅消息状态
-            console.log("update the other user's auth record");
-            db.collection("authorizations").where({
-              _openid: openid
-            }).update({
+            // 更改别人的订阅消息状态, 需要调用云函数
+            console.log("update the other user's auth record by cloud funtion");
+            wx.cloud.callFunction({
+              name: 'update_auth',
               data: {
+                openid: other_openid,
                 state: false
               },
-              success: function (res) {
+              success: function(res) {
                 console.log(res);
               }
             });
