@@ -131,7 +131,7 @@ Page({
   onShareAppMessage: function(option) {
     console.log(option);
     this.drawShareImage();
-    var shareTitle = "闲着没事？踢球啊！";
+    var shareTitle = "「咱们球场见」踢球啦！";
     var sharePath = "/pages/edit/edit?id=" + this.data.matchId;
     return {
       title: shareTitle,
@@ -264,6 +264,8 @@ Page({
     var inputStr = event.detail;
     if (inputStr && inputStr.length > 0) {
       this.data.matchInfo.subject = util.trim(inputStr);
+    } else {
+      this.data.matchInfo.subject = '';
     }
   },
 
@@ -275,6 +277,12 @@ Page({
         content: util.trim(inputStr),
         close: true
       };
+    } else {
+      this.data.signUpMap = {
+        openid: app.globalData.openid,
+        content: '',
+        close: true
+      };
     }
   },
 
@@ -284,6 +292,12 @@ Page({
       this.data.askForLeaveMap = {
         openid: app.globalData.openid,
         content: util.trim(inputStr),
+        close: true
+      };
+    } else {
+      this.data.askForLeaveMap = {
+        openid: app.globalData.openid,
+        content: '',
         close: true
       };
     }
@@ -374,6 +388,8 @@ Page({
         that.resetSUMap(that);
         that.resetAFLMap(that);
         that.notify("success", "发布比赛成功");
+        // 刷新list页面数据
+        that.refreshListPage();
       }
     });
     this.delayToHomePage(this);
@@ -439,6 +455,8 @@ Page({
           } else {
             _this.sendTemplateMsg(_this, "比赛信息更新了");
           }
+          // 刷新list页面数据
+          _this.refreshListPage();
         }
       );
       // 如果不是点了键盘的完成，而是发布比赛，则需要自动跳转页面
@@ -465,6 +483,8 @@ Page({
           _this.resetSUMap(_this);
           _this.resetAFLMap(_this);
           _this.sendTemplateMsg(_this, "有人" + successText + "了");
+          // 刷新list页面数据
+          _this.refreshListPage();
         }
       );
     }
@@ -567,39 +587,8 @@ Page({
     });
   },
 
-  toListPage: function() {
-    var page_url = '/pages/list/list';
-    if (this.data.publisher) {
-      var pages = getCurrentPages();
-      if (pages.length >= 2) {
-        // 本人小程序内跳转到首页
-        var previousPage = pages[pages.length - 2];
-        wx.navigateBack({
-          delta: 1,
-          success: function() {
-            if (previousPage) {
-              previousPage.onQuery(previousPage);
-            }
-          }
-        });
-      } else {
-        // 本人从卡片跳转到首页
-        wx.switchTab({
-          url: page_url,
-          success: function() {}
-        });
-      }
-    } else {
-      // 非本人从卡片跳转到首页
-      wx.switchTab({
-        url: page_url,
-        success: function() {}
-      });
-    }
-  },
-
   // 点击报名或者请假标签的删除按钮后触发
-  onTagClose: function(e) {
+  onTagClose: function (e) {
     console.log(e);
     // 从报名列表或者请假列表中删除自己
     Dialog.confirm({
@@ -613,7 +602,7 @@ Page({
       var tagDeleteTip = '';
       if ("signUp-tag" == tagId) {
         // 删除自己的报名信息
-        that.data.matchInfo.signUpList.forEach(function(item, index, arr) {
+        that.data.matchInfo.signUpList.forEach(function (item, index, arr) {
           if (index === dataIndex) {
             arr.splice(index, 1);
           }
@@ -629,7 +618,7 @@ Page({
         }
         if (!foundSU) {
           // 删除关联自己的openid
-          that.data.matchInfo.referredOpeneIds.forEach(function(item, index, arr) {
+          that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
             if (item === app.globalData.openid) {
               arr.splice(index, 1);
             }
@@ -639,7 +628,7 @@ Page({
       }
       if ("askForLeave-tag" == tagId) {
         // 删除自己的请假信息
-        that.data.matchInfo.askForLeaveList.forEach(function(item, index, arr) {
+        that.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
           if (index === dataIndex) {
             arr.splice(index, 1);
           }
@@ -655,7 +644,7 @@ Page({
         }
         if (!foundAFL) {
           // 删除关联自己的openid
-          that.data.matchInfo.referredOpeneIds.forEach(function(item, index, arr) {
+          that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
             if (item === app.globalData.openid) {
               arr.splice(index, 1);
             }
@@ -666,38 +655,78 @@ Page({
       // 执行更新操作
       if (that.data.publisher) {
         that.updateMatchInfoViaDB(that,
-          success => function(res) {
+          success => function (res) {
             console.log('[update]: ', res);
             that.notify('success', tagDeleteTip + "成功");
           },
-          complete => function(res) {
+          complete => function (res) {
             that.setData({
               matchInfo: that.data.matchInfo
             });
             that.resetSUMap(that);
             that.resetAFLMap(that);
             that.sendTemplateMsg(that, "有人" + tagDeleteTip + "了");
+            // 刷新list页面数据
+            that.refreshListPage();
           }
         );
       } else {
         that.updateMatchInfoViaCloud(that,
-          success => function(res) {
+          success => function (res) {
             console.log('[云函数] [update]: ', res);
             that.notify('success', tagDeleteTip + "成功");
           },
-          complete => function() {
+          complete => function () {
             that.setData({
               matchInfo: that.data.matchInfo
             });
             that.resetSUMap(that);
             that.resetAFLMap(that);
             that.sendTemplateMsg(that, "有人" + tagDeleteTip + "了");
+            // 刷新list页面数据
+            that.refreshListPage();
           }
         );
       }
     }).catch(() => {
       // on cancel
     });
+  },
+
+  refreshListPage: function () {
+    var pages = getCurrentPages();
+    if (pages.length >= 2) {
+      var previousPage = pages[pages.length - 2];
+      if (previousPage && previousPage.route === 'pages/list/list') {
+        previousPage.onQuery(previousPage);
+      }
+    }
+  },
+
+  toListPage: function() {
+    var page_url = '/pages/list/list';
+    if (this.data.publisher) {
+      var pages = getCurrentPages();
+      if (pages.length >= 2) {
+        // 本人小程序内跳转到首页
+        wx.navigateBack({
+          delta: 1,
+          success: function() {}
+        });
+      } else {
+        // 本人从卡片跳转到首页
+        wx.switchTab({
+          url: page_url,
+          success: function() {}
+        });
+      }
+    } else {
+      // 非本人从卡片跳转到首页
+      wx.switchTab({
+        url: page_url,
+        success: function() {}
+      });
+    }
   },
 
   /**
