@@ -1,0 +1,32 @@
+/* location.wxss */
+
+page {
+  background: white;
+}
+
+.page-body {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
+  overflow-x:hidden;
+}
+
+.van-swipe-cell__right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 65px;
+  height: 44px;
+  font-size: 15px;
+  line-height: 44px;
+  color: #fff;
+  text-align: center;
+  background-color: #ee0a24;
+}
+
+.edit_img {
+  width: 48rpx;
+  height: 48rpx;
+}

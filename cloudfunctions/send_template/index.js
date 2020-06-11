@@ -23,7 +23,7 @@ exports.main = async (event, context) => {
           value: event.detail
         },
         number8: {
-          value: event.sighUpCount
+          value: event.signUpCount
         },
         thing5: {
           value: event.position

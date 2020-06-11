@@ -257,7 +257,7 @@ Page({
     var page_url = '/pages/edit/edit';
     wx.navigateTo({
       url: page_url,
-    })
+    });
   },
 
   notify: function (tp, msg) {

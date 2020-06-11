@@ -10,7 +10,7 @@
     </van-popup>
 
     <view hidden="{{hideAuthMsgBtnFlag}}">
-      <van-button type="primary" size="large" bind:click="onUserAuthMsg">订阅「报名进展通知」消息</van-button>
+      <van-button type="primary" size="large" bind:click="onUserAuthMsg">订阅一次「报名进展通知」消息</van-button>
     </view>
 
     <van-field clickable="{{!subjectDisabled}}" readonly="{{subjectDisabled}}" value="{{matchInfo.subject}}" label="比赛主题" type="textarea" placeholder="输入比赛主题" autosize clearable="{{true}}" required="{{!expired && publisher}}" bind:input='setSubjectInput'>
@@ -22,9 +22,9 @@
     <van-field is-link="{{!timeDisabled}}" readonly label="比赛时间" value="{{matchInfo.showTime}}" required="{{!expired && publisher}}" placeholder="选取比赛时间" bindtap="showTimePicker">
     </van-field>
 
-    <van-field id="signUp" clickable="{{!expired}}" label="报名列表" required="{{!expired && !publisher}}" disabled="{{expired}}" value="{{fieldSUValue}}" placeholder="报名" type="text" confirm-type="报名" bind:input='setSUInput' bind:blur="updateMatchInfo">
+    <van-field id="signUp" clickable="{{!expired}}" label="报名列表" required="{{!expired && !publisher}}" disabled="{{expired}}" value="{{fieldSUValue}}" placeholder="报名" type="text" confirm-type="报名" bind:input='setSUInput' bind:blur="updateMatchInfo" bind:click-icon="inputNameNote">
       <view hidden="{{expired}}" slot="right-icon">
-        <image class="" src="../../images/input.png" />
+        <image class="" src="../../images/add.png" />
       </view>
     </van-field>
     <text class="tag-total" hidden="{{!(matchInfo.signUpList.length)}}">已有{{matchInfo.signUpList.length}}人报名</text>
@@ -36,9 +36,9 @@
       </view>
     </view>
 
-    <van-field id="askForLeave" clickable="{{!expired}}" label="请假列表" required="{{!expired && !publisher}}" disabled="{{expired}}" value="{{fieldAFLValue}}" placeholder="请假" type="text" confirm-type="请假" bind:input='setAFLInput' bind:blur="updateMatchInfo">
+    <van-field id="askForLeave" clickable="{{!expired}}" label="请假列表" required="{{!expired && !publisher}}" disabled="{{expired}}" value="{{fieldAFLValue}}" placeholder="请假" type="text" confirm-type="请假" bind:input='setAFLInput' bind:blur="updateMatchInfo" bind:click-icon="inputNameNote">
       <view hidden="{{expired}}" slot="right-icon">
-        <image class="" src="../../images/input.png" />
+        <image class="" src="../../images/add.png" />
       </view>
     </van-field>
     <text class="tag-total" hidden="{{!(matchInfo.askForLeaveList.length)}}">已有{{matchInfo.askForLeaveList.length}}人请假</text>
@@ -50,7 +50,7 @@
       </view>
     </view>
 
-    <van-field readonly required="{{!expired && publisher}}" label="场地名称" placeholder="选取比赛位置" value="{{matchInfo.location.name}}" type="textarea" autosize bind:click-icon="chooseLocation">
+    <van-field readonly required="{{!expired && publisher}}" label="场地名称" placeholder="选取比赛位置" value="{{matchInfo.location.name}}" type="textarea" autosize bind:click-icon="toLocationPage">
       <view hidden="{{locationDisabled}}" slot="right-icon">
         <image class="" src="../../images/add.png" />
       </view>

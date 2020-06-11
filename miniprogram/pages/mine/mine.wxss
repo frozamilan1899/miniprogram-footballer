@@ -1,0 +1,42 @@
+/* mine.wxss */
+
+.page-body {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
+  overflow-x:hidden;
+}
+
+.userInfo {
+  position: relative;  
+  width: 100%;  
+  height: 128rpx;  
+  color: #333;  
+  display: flex;  
+  flex-direction: row;  
+  align-items: left;  
+  background-color: #F6F6F6;
+}
+
+.userAvatar {
+  overflow:hidden;  
+  display: block;
+  width: 88rpx;  
+  height: 88rpx;  
+  margin-top: 20rpx;
+  margin-left: 24rpx;
+  border-radius: 50%;  
+  border: 2px solid #fff;
+}
+
+.userNickName {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 88rpx;  
+  margin-top: 20rpx;
+  margin-left: 20rpx;
+}

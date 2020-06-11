@@ -1,0 +1,32 @@
+<!--mine.wxml-->
+
+<view class="container">
+  <view class="page-body">
+    <view class="userInfo">
+      <view class="userAvatar">
+        <open-data type="userAvatarUrl"></open-data>
+      </view>
+      <view class="userNickName">
+        <open-data type="userNickName"></open-data>
+      </view>
+    </view>
+
+    <van-cell-group title="隐私">
+      <van-cell is-link center clickable title="授权管理" bind:click="openSettingPage">
+      </van-cell>
+    </van-cell-group>
+
+    <van-cell-group title="通用">
+      <van-cell is-link center clickable title="我的备注" use-label-slot="{{true}}" url="../note/note?from=mine">
+        <view slot="label">
+          <view>添加名称备注，方便报名或者请假</view>
+        </view>
+      </van-cell>
+      <van-cell is-link center clickable title="常用位置" use-label-slot="{{true}}" url="../location/location?from=mine">
+        <view slot="label">
+          <view>添加常用比赛场地，方便比赛位置的选取</view>
+        </view>
+      </van-cell>
+    </van-cell-group>
+  </view>
+</view>

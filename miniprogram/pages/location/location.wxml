@@ -1,0 +1,22 @@
+<!--location.wxml-->
+
+<view class="container">
+  <view class="page-body">
+    <van-notify id="van-notify" />
+
+    <van-button type="primary" size="large" bind:click="chooseLocation"> 添加常用位置 </van-button>
+
+    <van-cell-group wx:if="{{locations.length}}" title="近期使用过的位置">
+      <van-swipe-cell right-width="{{65}}" wx:for="{{locations}}" wx:key="key" wx:for-item="item" data-index="{{index}}" async-close bind:click="toPreviousPage" bind:close="onCellClose">
+        <van-cell center border clickable icon="location-o" title="场地名称：{{item.location.name}}" use-label-slot="{{true}}">
+          <view slot="label">
+            <view>场地地址：{{item.location.address}}</view>
+          </view>
+        </van-cell>
+        <view slot="right" class="van-swipe-cell__right">删除</view>
+      </van-swipe-cell>
+    </van-cell-group>
+  </view>
+
+  <van-divider wx:if="{{!locations.length}}" contentPosition="center">天高任鸟飞，海阔凭鱼跃</van-divider>
+</view>

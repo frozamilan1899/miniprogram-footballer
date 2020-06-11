@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "常用位置",
+  "usingComponents": {
+    "van-button": "@vant/weapp/button/index",
+    "van-cell": "@vant/weapp/cell/index",
+    "van-cell-group": "@vant/weapp/cell-group/index",
+    "van-swipe-cell": "@vant/weapp/swipe-cell/index",
+    "van-notify": "@vant/weapp/notify/index",
+    "van-divider": "@vant/weapp/divider/index"
+  }
+}

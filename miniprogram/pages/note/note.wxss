@@ -1,0 +1,15 @@
+/* note.wxss */
+
+.page-body {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
+  overflow-x:hidden;
+}
+
+.edit_img {
+  width: 48rpx;
+  height: 48rpx;
+}

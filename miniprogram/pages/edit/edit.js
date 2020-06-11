@@ -73,7 +73,9 @@ Page({
     // ------------------------------
     sharePicUrl: "",
     // ------------------------------
-    hideAuthMsgBtnFlag: true
+    hideAuthMsgBtnFlag: true,
+    // ------------------------------
+    nameNote: ''
   },
 
   onLoad: function(options) {
@@ -117,6 +119,19 @@ Page({
       // 如果不是，获取订阅消息的授权状态并按需显示授权按钮
       this.queryAuthRecord(this);
     } 
+
+    // 获取名称备注
+    this.queryNoteRecord(this);
+  },
+
+  onShow: function(options) {
+    console.log(options);
+    var pages = getCurrentPages();
+    var currPage = pages[pages.length - 1];
+    var location = currPage.data.location;
+    if (location) {
+      this.setLocation(this, location);
+    }
   },
 
   onUnload: function() {
@@ -593,7 +608,7 @@ Page({
     // 从报名列表或者请假列表中删除自己
     Dialog.confirm({
       title: '提示',
-      message: '确认是否删除？',
+      message: '确认是否取消？',
     }).then(() => {
       // on confirm
       var that = this;
@@ -767,29 +782,21 @@ Page({
     })
   },
 
-  chooseLocation: function(e) {
-    var that = this;
-    wx.chooseLocation({
-      success: function(res) {
-        console.log(res);
-        that.data.currentLocation.longitude = res.longitude;
-        that.data.currentLocation.latitude = res.latitude;
-        that.data.currentLocation.name = res.name;
-        that.data.currentLocation.address = res.address;
-        var matchInfo = that.data.matchInfo;
-        matchInfo.location = that.data.currentLocation;
-        that.data.matchInfo = matchInfo;
-        var markers = that.createMarkers(that.data.matchInfo.location);
-        that.data.markers = markers;
-        that.setData({
-          matchInfo: matchInfo,
-          markers: that.data.markers
-        });
-      },
-      fail: function(res) {
-        console.log(res);
-      }
-    })
+  setLocation: function(_this, location) {
+    console.log(location);
+    _this.data.currentLocation.longitude = location.longitude;
+    _this.data.currentLocation.latitude = location.latitude;
+    _this.data.currentLocation.name = location.name;
+    _this.data.currentLocation.address = location.address;
+    var matchInfo = _this.data.matchInfo;
+    matchInfo.location = _this.data.currentLocation;
+    _this.data.matchInfo = matchInfo;
+    var markers = _this.createMarkers(_this.data.matchInfo.location);
+    _this.data.markers = markers;
+    _this.setData({
+      matchInfo: matchInfo,
+      markers: _this.data.markers
+    });
   },
 
   createMarkers: function(location) {
@@ -802,6 +809,13 @@ Page({
       height: 24
     }];
     return markers;
+  },
+
+  toLocationPage: function() {
+    var page_url = '/pages/location/location?from=edit';
+    wx.navigateTo({
+      url: page_url,
+    });
   },
 
   /**
@@ -922,10 +936,12 @@ Page({
         }
         that.data.hideAuthMsgBtnFlag = state;
         that.updateAuthRecord(that, state, true);
+        that.notify('success', '已成功订阅一次通知消息');
       },
       fail: function (res) {
         console.log('授权订阅消息失败');
         console.log(res);
+        that.notify('warning', '通知消息订阅失败');
       },
       complete: function (res) {
         console.log('完成订阅消息的授权');
@@ -1004,7 +1020,7 @@ Page({
             subject: util.getSubStrBylen(_this.data.matchInfo.subject, 17),
             showTime: _this.data.matchInfo.showTime,
             detail: detail,
-            sighUpCount: _this.data.matchInfo.signUpList.length,
+            signUpCount: _this.data.matchInfo.signUpList.length,
             position: util.getSubStrBylen(_this.data.matchInfo.location.name, 17)
           },
           success: function(res) {
@@ -1024,5 +1040,90 @@ Page({
         });
       }
     }
-  }
+  },
+
+  /**
+   * ================================================================
+   * 名称备注相关的代码
+   * ================================================================
+   */
+  queryNoteRecord: function (_this) {
+    console.log("query note record");
+    db.collection("notes").where({
+      _openid: app.globalData.openid
+    }).get({
+      success: function (res) {
+        console.log(res);
+        if (res.data.length > 0) {
+          _this.data.nameNote = res.data[0].nameNote;
+        }
+      },
+      fail: function (res) {
+        console.log(res);
+      }
+    });
+  },
+
+  inputNameNote: function (e) {
+    if (this.data.nameNote.length === 0) {
+      // 提示用户去设置名称备注
+      var that = this;
+      Dialog.confirm({
+        title: '提示',
+        message: '还没有设置名称备注，去设置？',
+      }).then(() => {
+        // on confirm
+        that.toNotePage();
+      }).catch(() => {
+        // on cancel
+        that.notify('warning', '请稍后在[我的->我的备注]中设置');
+      });
+      return;
+    }
+
+    if (e) {
+      var tagId = e.target.id;
+      if ("signUp" == tagId) { 
+        this.data.signUpMap = {
+          openid: app.globalData.openid,
+          content: this.data.nameNote,
+          close: true
+        };
+        this.setData({
+          fieldSUValue: this.data.nameNote
+        });
+        this.resetAFLMap(this);
+
+        // 延迟0.5秒自动提交
+        var that = this;
+        setTimeout(function () {
+          that.updateMatchInfo();
+        }, 500);
+      }
+      else if ("askForLeave" == tagId) {
+        this.data.askForLeaveMap = {
+          openid: app.globalData.openid,
+          content: this.data.nameNote,
+          close: true
+        };
+        this.setData({
+          fieldAFLValue: this.data.nameNote
+        });
+        this.resetSUMap(this);
+
+        // 延迟0.5秒自动提交
+        var that = this;
+        setTimeout(function () {
+          that.updateMatchInfo();
+        }, 500);
+      }
+    }
+  },
+
+  toNotePage: function () {
+    var page_url = '/pages/note/note?from=edit';
+    wx.navigateTo({
+      url: page_url,
+    });
+  },
 })

@@ -1,0 +1,15 @@
+<!--note.wxml-->
+
+<view class="container">
+  <view class="page-body">
+    <van-notify id="van-notify" />
+
+    <van-field value="{{nameNote}}" placeholder="备注" type="text" bind:input='setNameNoteInput' bind:blur="">
+      <view slot="right-icon">
+        <image class="edit_img" src="../../images/input.png" />
+      </view>
+    </van-field>
+
+    <van-button type="primary" size="large" bind:click="saveAndNaviback"> 保存 </van-button>
+  </view>
+</view>
