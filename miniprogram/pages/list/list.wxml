@@ -40,7 +40,6 @@
       </van-swipe-cell>
     </van-cell-group>
 
-    <van-divider wx:if="{{matches.length}}" contentPosition="center">因为足球，所以美丽</van-divider>
-    <van-divider wx:else contentPosition="center">同城聚英豪，绿茵显英姿</van-divider>
+    <van-divider contentPosition="center">因为足球，所以美丽</van-divider>
   </view>
 </view>

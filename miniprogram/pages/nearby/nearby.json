@@ -1,0 +1,12 @@
+{
+  "navigationBarTitleText": "附近",
+  "usingComponents": {
+    "van-skeleton": "@vant/weapp/skeleton/index",
+    "van-button": "@vant/weapp/button/index",
+    "van-dropdown-menu": "@vant/weapp/dropdown-menu/index",
+    "van-dropdown-item": "@vant/weapp/dropdown-item/index",
+    "van-cell": "@vant/weapp/cell/index",
+    "van-cell-group": "@vant/weapp/cell-group/index",
+    "van-divider": "@vant/weapp/divider/index"
+  }
+}

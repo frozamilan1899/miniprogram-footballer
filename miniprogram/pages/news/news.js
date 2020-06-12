@@ -102,7 +102,6 @@ Page({
   },
 
   queryNews: function(e) {
-    const _ = db.command;
     console.log('query news');
     var that = this;
     db.collection('news').get({

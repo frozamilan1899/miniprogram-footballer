@@ -1,0 +1,24 @@
+<!--nearby.wxml-->
+
+<view class="container">
+  <view class="page-body">
+    <van-dropdown-menu>
+      <van-dropdown-item value="{{ defaulValue1 }}" options="{{ option1 }}" bind:change="distanceChanged" />
+      <van-dropdown-item value="{{ defaulValue2 }}" options="{{ option2 }}" bind:change="intervalTimeChanged" />
+    </van-dropdown-menu>
+
+    <van-cell-group wx:if="{{displayMatches.length}}" title="筛选出的近期所有比赛">
+      <van-cell center is-link="{{item.canOpen}}" border clickable title="比赛主题：{{item.subject}}" use-label-slot="{{true}}" url="{{item.navigatePage}}" wx:for="{{displayMatches}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
+        <view slot="label">
+          <view>比赛时间：{{item.showTime}}</view>
+          <view>报名人数：{{item.signUpList.length}}人</view>
+          <view>请假人数：{{item.askForLeaveList.length}}人</view>
+          <view>比赛地点：{{item.location.name}}（{{item.location.address}}）</view>
+          <view>当前距离：{{item.distToLoc}} km</view>
+        </view>
+      </van-cell>
+    </van-cell-group>
+
+    <van-divider contentPosition="center">同城聚英豪，绿茵显英姿</van-divider>
+  </view>
+</view>

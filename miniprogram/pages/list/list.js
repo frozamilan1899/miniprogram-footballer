@@ -1,6 +1,7 @@
 //list.js
 const app = getApp();
 const db = app.globalData.db;
+const _ = db.command;
 
 import Notify from '../../miniprogram_npm/@vant/weapp/notify/notify';
 import Dialog from '../../miniprogram_npm/@vant/weapp/dialog/dialog';
@@ -70,7 +71,6 @@ Page({
 
   onQuery: function(_this) {
     if (0 == _this.data.openid.length) return;
-    const _ = db.command;
     wx.showLoading({
       title: '加载中...',
     });
