@@ -152,6 +152,7 @@ Page({
         }
       }
       // 组装displayMatches
+      _this.data.displayMatches = [];
       for (let i = 0; i < tmpMatchIds.length; i++) {
         let matchId = tmpMatchIds[i];
         for (let j = 0; j < _this.data.allMatches.length; j++) {
