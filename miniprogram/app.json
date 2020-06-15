@@ -2,7 +2,6 @@
   "pages": [
     "pages/list/list",
     "pages/edit/edit",
-    "pages/news/news",
     "pages/location/location",
     "pages/mine/mine",
     "pages/note/note",
@@ -43,12 +42,6 @@
         "text": "附近",
         "iconPath": "./images/nearby.png",
         "selectedIconPath": "./images/nearby_selected.png"
-      },
-      {
-        "pagePath": "pages/news/news",
-        "text": "国足",
-        "iconPath": "./images/news.png",
-        "selectedIconPath": "./images/news_selected.png"
       },
       {
         "pagePath": "pages/mine/mine",

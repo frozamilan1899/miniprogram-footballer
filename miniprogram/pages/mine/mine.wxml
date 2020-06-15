@@ -11,11 +11,6 @@
       </view>
     </view>
 
-    <van-cell-group title="隐私">
-      <van-cell is-link center clickable title="授权管理" bind:click="openSettingPage">
-      </van-cell>
-    </van-cell-group>
-
     <van-cell-group title="通用">
       <van-cell is-link center clickable title="我的备注" use-label-slot="{{true}}" url="../note/note?from=mine">
         <view slot="label">
@@ -28,5 +23,11 @@
         </view>
       </van-cell>
     </van-cell-group>
+
+    <van-cell-group title="隐私">
+      <van-cell is-link center clickable title="授权管理" bind:click="openSettingPage">
+      </van-cell>
+    </van-cell-group>
+    
   </view>
 </view>
