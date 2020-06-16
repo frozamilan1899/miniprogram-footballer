@@ -11,8 +11,7 @@
       <van-cell center is-link="{{item.canOpen}}" border clickable title="比赛主题：{{item.subject}}" use-label-slot="{{true}}" url="{{item.navigatePage}}" wx:for="{{displayMatches}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
         <view slot="label">
           <view>比赛时间：{{item.showTime}}</view>
-          <view>报名人数：{{item.signUpList.length}}人</view>
-          <view>请假人数：{{item.askForLeaveList.length}}人</view>
+          <view>参与人数：{{item.signUpList.length}}人</view>
           <view>比赛地点：{{item.location.name}}（{{item.location.address}}）</view>
           <view>当前距离：{{item.distToLoc}} km</view>
         </view>

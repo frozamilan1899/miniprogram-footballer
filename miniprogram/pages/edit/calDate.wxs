@@ -1,0 +1,17 @@
+function displayDate(matchTime) {
+  var displayDate = getDate().getTime();
+  if (matchTime) {
+    displayDate = matchTime;
+  }
+  console.log(displayDate);
+  return displayDate;
+}
+
+function minDate() {
+  return getDate().getTime();
+}
+
+module.exports = {
+  displayDate: displayDate,
+  minDate: minDate
+}

@@ -48,8 +48,6 @@ Page({
     },
     // ------------------------------
     showTimePickerFlag: false,
-    minDate: new Date().getTime(),
-    currentDate: new Date().getTime(),
     formatter(type, value) {
       if (type === 'year') {
         return `${value}年`;
@@ -378,12 +376,12 @@ Page({
   },
 
   addNewMatch: function() {
+    // 发布新的比赛
+    console.log("add match info");
     // 添加这场比赛关联的openid
     if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
       this.data.matchInfo.referredOpeneIds.push(app.globalData.openid);
     }
-    // 发布新的比赛
-    console.log("add match info");
     // 如果有报名信息添加
     if (this.data.signUpMap.content != '') {
       this.data.matchInfo.signUpList.push(this.data.signUpMap);
@@ -422,16 +420,7 @@ Page({
       console.log('input SU or AFL data');
       return;
     }
-    var successText = '发布比赛';
-    if (e) {
-      var tagId = e.target.id;
-      if ("signUp" == tagId) { successText = '报名'; }
-      if ("askForLeave" == tagId) { successText = '请假'; }
-    }
-    // 添加这场比赛关联的openid
-    if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
-      this.data.matchInfo.referredOpeneIds.push(app.globalData.openid);
-    }
+    // 更新比赛信息
     console.log("update match info");
     // 判断报名信息的合法性
     if (this.checkSignUpList()) {
@@ -440,6 +429,16 @@ Page({
     // 判断请假信息的合法性
     if (this.checkAskForLeaveList()) {
       return;
+    }
+    // 添加这场比赛关联的openid
+    if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
+      this.data.matchInfo.referredOpeneIds.push(app.globalData.openid);
+    }
+    var successText = '发布比赛';
+    if (e) {
+      var tagId = e.target.id;
+      if ("signUp" == tagId) { successText = '报名'; }
+      if ("askForLeave" == tagId) { successText = '请假'; }
     }
     // 执行更新操作
     if (this.data.publisher) {
@@ -466,9 +465,9 @@ Page({
           _this.resetSUMap(_this);
           _this.resetAFLMap(_this);
           if (e) {
-            _this.sendTemplateMsg(_this, "有人" + successText + "了");
+            _this.sendTemplateUpdateMsg(_this, "有人" + successText + "了");
           } else {
-            _this.sendTemplateMsg(_this, "比赛信息更新了");
+            _this.sendTemplateUpdateMsg(_this, "比赛信息更新了");
           }
           // 刷新list页面数据
           _this.refreshListPage();
@@ -497,7 +496,7 @@ Page({
           });
           _this.resetSUMap(_this);
           _this.resetAFLMap(_this);
-          _this.sendTemplateMsg(_this, "有人" + successText + "了");
+          _this.sendTemplateUpdateMsg(_this, "有人" + successText + "了");
           // 刷新list页面数据
           _this.refreshListPage();
         }
@@ -680,7 +679,7 @@ Page({
             });
             that.resetSUMap(that);
             that.resetAFLMap(that);
-            that.sendTemplateMsg(that, "有人" + tagDeleteTip + "了");
+            that.sendTemplateUpdateMsg(that, "有人" + tagDeleteTip + "了");
             // 刷新list页面数据
             that.refreshListPage();
           }
@@ -697,7 +696,7 @@ Page({
             });
             that.resetSUMap(that);
             that.resetAFLMap(that);
-            that.sendTemplateMsg(that, "有人" + tagDeleteTip + "了");
+            that.sendTemplateUpdateMsg(that, "有人" + tagDeleteTip + "了");
             // 刷新list页面数据
             that.refreshListPage();
           }
@@ -1003,16 +1002,16 @@ Page({
     });
   },
 
-  sendTemplateMsg: function (_this, detail) {
+  sendTemplateUpdateMsg: function (_this, detail) {
     // 调用云函数发送订阅消息
-    console.log("send template message");
+    console.log("send template update message");
     for(let i = 0; i < _this.data.matchInfo.referredOpeneIds.length; i++) {
       let openid = _this.data.matchInfo.referredOpeneIds[i];
       // 只发送给除自己之外的参与者
-      if (openid != app.globalData.openid) {
+      if (openid === app.globalData.openid) {
         var other_openid = openid;
         wx.cloud.callFunction({
-          name: 'send_template',
+          name: 'send_template_update',
           data: {
             openid: other_openid,
             page: "/pages/edit/edit",
@@ -1097,10 +1096,9 @@ Page({
         // 延迟0.5秒自动提交
         var that = this;
         setTimeout(function () {
-          that.updateMatchInfo();
+          that.updateMatchInfo(e);
         }, 500);
-      }
-      else if ("askForLeave" == tagId) {
+      } else if ("askForLeave" == tagId) {
         this.data.askForLeaveMap = {
           openid: app.globalData.openid,
           content: this.data.nameNote,
@@ -1114,7 +1112,7 @@ Page({
         // 延迟0.5秒自动提交
         var that = this;
         setTimeout(function () {
-          that.updateMatchInfo();
+          that.updateMatchInfo(e);
         }, 500);
       }
     }
