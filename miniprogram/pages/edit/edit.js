@@ -621,23 +621,6 @@ Page({
             arr.splice(index, 1);
           }
         });
-        // 如果在报名列表中没有自己的报名信息，将关联的openid删除（发布者除外）
-        let foundSU = false;
-        for (let i = 0; i < that.data.matchInfo.signUpList.length; i++) {
-          let signUpMap = that.data.matchInfo.signUpList[i];
-          if (signUpMap.openid == app.globalData.openid) {
-            foundSU = true;
-            break;
-          }
-        }
-        if (!foundSU) {
-          // 删除关联自己的openid
-          that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
-            if (item === app.globalData.openid) {
-              arr.splice(index, 1);
-            }
-          });
-        }
         tagDeleteTip = "取消报名";
       }
       if ("askForLeave-tag" == tagId) {
@@ -647,7 +630,20 @@ Page({
             arr.splice(index, 1);
           }
         });
-        // 如果在请假列表中没有自己的请假信息，将关联的openid删除（发布者除外）
+        tagDeleteTip = "取消请假";
+      }
+      // 将关联的openid删除（发布者的openid除外）
+      if (that.data.matchInfo._openid != app.globalData.openid) {
+        // 在报名列表中查找自己的报名信息
+        let foundSU = false;
+        for (let i = 0; i < that.data.matchInfo.signUpList.length; i++) {
+          let signUpMap = that.data.matchInfo.signUpList[i];
+          if (signUpMap.openid == app.globalData.openid) {
+            foundSU = true;
+            break;
+          }
+        }
+        // 在请假列表中查找自己的请假信息
         let foundAFL = false;
         for (let i = 0; i < that.data.matchInfo.askForLeaveList.length; i++) {
           let askForLeaveMap = that.data.matchInfo.askForLeaveList[i];
@@ -656,15 +652,14 @@ Page({
             break;
           }
         }
-        if (!foundAFL) {
-          // 删除关联自己的openid
+        if (!foundSU && !foundAFL) {
+          // 删除关联的openid
           that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
             if (item === app.globalData.openid) {
               arr.splice(index, 1);
             }
           });
         }
-        tagDeleteTip = "取消请假";
       }
       // 执行更新操作
       if (that.data.publisher) {
@@ -924,6 +919,7 @@ Page({
           let result = all_attribute_value[i];
           if (result == 'accept') {
             console.log('已授权接收订阅消息');
+            that.notify('success', '已成功订阅一次通知消息');
             state = true;
             break;
           } else if (result == 'reject') {
@@ -935,7 +931,6 @@ Page({
         }
         that.data.hideAuthMsgBtnFlag = state;
         that.updateAuthRecord(that, state, true);
-        that.notify('success', '已成功订阅一次通知消息');
       },
       fail: function (res) {
         console.log('授权订阅消息失败');
@@ -1008,7 +1003,7 @@ Page({
     for(let i = 0; i < _this.data.matchInfo.referredOpeneIds.length; i++) {
       let openid = _this.data.matchInfo.referredOpeneIds[i];
       // 只发送给除自己之外的参与者
-      if (openid === app.globalData.openid) {
+      if (openid != app.globalData.openid) {
         var other_openid = openid;
         wx.cloud.callFunction({
           name: 'send_template_update',

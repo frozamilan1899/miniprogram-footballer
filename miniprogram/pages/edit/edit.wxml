@@ -11,7 +11,7 @@
       <van-datetime-picker id="datetime" type="datetime" value="{{CalDate.displayDate(matchInfo.time)}}" min-date="{{CalDate.minDate()}}" formatter="{{formatter}}" filter="{{filter}}" bind:cancel="onTimePickerCancel" bind:confirm="onTimePickerConfirm" />
     </van-popup>
 
-    <view hidden="{{hideAuthMsgBtnFlag}}">
+    <view hidden="{{expired || hideAuthMsgBtnFlag}}">
       <van-button type="primary" size="large" bind:click="onUserAuthMsg">订阅一次「报名进展通知」消息</van-button>
     </view>
 
