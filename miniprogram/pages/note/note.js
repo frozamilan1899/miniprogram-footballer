@@ -2,6 +2,8 @@ const app = getApp();
 var util = require('../../common-js/util.js');
 const db = app.globalData.db;
 
+import Notify from '../../miniprogram_npm/@vant/weapp/notify/notify';
+
 Page({
 
   data: {
@@ -54,8 +56,15 @@ Page({
   },
 
   saveAndNaviback: function() {
+    if ('' === this.data.nameNote) {
+      this.notify('danger', '请填写名称备注');
+      return;
+    }
+    
+    if ('' === this.data.recordId) {
+      this.data.recordId = app.globalData.openid;
+    }
     var that = this;
-    if (that.data.recordId == '') that.data.recordId = app.globalData.openid;
     db.collection('notes').doc(that.data.recordId).set({
       data: {
         nameNote: that.data.nameNote
@@ -76,6 +85,14 @@ Page({
           delta: 1
         });
       }
+    });
+  },
+
+  notify: function(tp, msg) {
+    Notify({
+      type: tp,
+      message: msg,
+      duration: 2000
     });
   },
 })

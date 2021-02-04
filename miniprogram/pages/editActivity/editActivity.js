@@ -23,7 +23,7 @@ Page({
         address: ''
       },
       updateTime: 0,
-      referredOpeneIds: []
+      referredOpenIds: []
     },
     signUpMap: {
       openid: "",
@@ -384,8 +384,8 @@ Page({
     // 发布新的活动
     console.log("add activity info");
     // 添加这场活动关联的openid
-    if (-1 == this.data.activityInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
-      this.data.activityInfo.referredOpeneIds.push(app.globalData.openid);
+    if (-1 == this.data.activityInfo.referredOpenIds.indexOf(app.globalData.openid)) {
+      this.data.activityInfo.referredOpenIds.push(app.globalData.openid);
     }
     // 如果有报名信息添加
     if (this.data.signUpMap.content != '') {
@@ -436,8 +436,8 @@ Page({
       return;
     }
     // 添加这场活动关联的openid
-    if (-1 == this.data.activityInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
-      this.data.activityInfo.referredOpeneIds.push(app.globalData.openid);
+    if (-1 == this.data.activityInfo.referredOpenIds.indexOf(app.globalData.openid)) {
+      this.data.activityInfo.referredOpenIds.push(app.globalData.openid);
     }
     var successText = '发布活动';
     if (e) {
@@ -582,7 +582,7 @@ Page({
         askForLeaveList: _this.data.activityInfo.askForLeaveList,
         signUpList: _this.data.activityInfo.signUpList,
         updateTime: _this.data.activityInfo.updateTime,
-        referredOpeneIds: _this.data.activityInfo.referredOpeneIds
+        referredOpenIds: _this.data.activityInfo.referredOpenIds
       },
       success: successCallback(),
       complete: completeCallback()
@@ -600,7 +600,7 @@ Page({
         signUpList: _this.data.activityInfo.signUpList,
         askForLeaveList: _this.data.activityInfo.askForLeaveList,
         updateTime: _this.data.activityInfo.updateTime,
-        referredOpeneIds: _this.data.activityInfo.referredOpeneIds
+        referredOpenIds: _this.data.activityInfo.referredOpenIds
       },
       success: successCallback(),
       complete: completeCallback()
@@ -661,7 +661,7 @@ Page({
         }
         if (!foundSU && !foundAFL) {
           // 删除关联的openid
-          that.data.activityInfo.referredOpeneIds.forEach(function (item, index, arr) {
+          that.data.activityInfo.referredOpenIds.forEach(function (item, index, arr) {
             if (item === app.globalData.openid) {
               arr.splice(index, 1);
             }
@@ -1035,8 +1035,8 @@ Page({
   sendTemplateUpdateMsg: function (_this, detail) {
     // 调用云函数发送订阅消息
     console.log("send template update message");
-    for(let i = 0; i < _this.data.activityInfo.referredOpeneIds.length; i++) {
-      let openid = _this.data.activityInfo.referredOpeneIds[i];
+    for(let i = 0; i < _this.data.activityInfo.referredOpenIds.length; i++) {
+      let openid = _this.data.activityInfo.referredOpenIds[i];
       // 只发送给除自己之外的参与者
       if (openid != app.globalData.openid) {
         var other_openid = openid;
