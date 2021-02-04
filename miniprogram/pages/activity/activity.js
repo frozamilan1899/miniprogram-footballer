@@ -234,7 +234,7 @@ Page({
         wx.showLoading({
           title: '删除中...',
         });
-        db.collection(that.dbName).doc(_id).remove({
+        db.collection(that.data.dbName).doc(_id).remove({
           success: function() {
             that.onQuery(that);
             that.notify('success', '删除活动成功');
