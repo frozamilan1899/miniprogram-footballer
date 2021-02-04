@@ -1,0 +1,90 @@
+<view class="container">
+  <view class="page-body">
+    <canvas canvas-id="shareBox" style="width:300px;height:0px;"></canvas>
+    <van-notify id="van-notify" />
+    <van-dialog id="van-dialog" />
+
+    <wxs src="calDate.wxs" module="CalDate"/>
+    <van-popup show="{{showTimePickerFlag}}" position="bottom" custom-style="height:45%">
+      <van-datetime-picker id="datetime" type="datetime" value="{{CalDate.displayDate(activityInfo.time)}}" min-date="{{CalDate.minDate()}}" formatter="{{formatter}}" filter="{{filter}}" bind:cancel="onTimePickerCancel" bind:confirm="onTimePickerConfirm" />
+    </van-popup>
+
+    <van-popup show="{{showDurationPickerFlag}}" position="bottom" custom-style="height:45%">
+      <van-picker show-toolbar="true" columns="{{durationColumns}}" default-index="{{2}}" bind:cancel="onDurationPickerCancel" bind:confirm="onDurationPickerConfirm" />
+    </van-popup>
+
+    <view hidden="{{expired || hideAuthMsgBtnFlag}}">
+      <van-button type="primary" size="large" bind:click="onUserAuthMsg">订阅一次「报名进展通知」消息</van-button>
+    </view>
+
+    <van-field clickable="{{!subjectDisabled}}" readonly="{{subjectDisabled}}" value="{{activityInfo.subject}}" label="活动主题" type="textarea" placeholder="输入活动主题" autosize clearable="{{true}}" required="{{!expired && publisher}}" bind:input='setSubjectInput'>
+    <view hidden="{{subjectDisabled}}" slot="right-icon">
+        <image class="" src="../../images/input.png" />
+      </view>
+    </van-field>
+
+    <van-field is-link="{{!timeDisabled}}" readonly label="活动时间" value="{{activityInfo.showTime}}" required="{{!expired && publisher}}" placeholder="选取活动时间" bindtap="showTimePicker">
+    </van-field>
+
+    <van-field is-link="{{!timeDisabled}}" readonly label="活动时长" value="{{activityInfo.duration}}分钟" placeholder="选取活动时长" bindtap="showDurationPicker">
+    </van-field>
+
+    <van-field id="signUp" clickable="{{!expired}}" label="报名列表" required="{{!expired && !publisher}}" disabled="{{expired}}" value="{{fieldSUValue}}" wx:if="{{!expired}}" placeholder="点+号或输入" type="text" confirm-type="报名" bind:input='setSUInput' bind:blur="updateActivityInfo" bind:click-icon="inputNameNote">
+      <view hidden="{{expired}}" slot="right-icon">
+        <image class="" src="../../images/add.png" />
+      </view>
+    </van-field>
+    <van-field id="signUp" clickable="{{!expired}}" label="报名列表" required="{{!expired && !publisher}}" disabled="{{expired}}" value="{{fieldSUValue}}" wx:if="{{expired}}" placeholder="共有{{activityInfo.signUpList.length}}人报名" type="text" confirm-type="报名" bind:input='setSUInput' bind:blur="updateActivityInfo" bind:click-icon="inputNameNote">
+      <view hidden="{{expired}}" slot="right-icon">
+        <image class="" src="../../images/add.png" />
+      </view>
+    </van-field>
+    <text class="tag-total" wx:if="{{!expired}}" hidden="{{!(activityInfo.signUpList.length)}}">已有{{activityInfo.signUpList.length}}人报名</text>
+    <view class="tag-list" hidden="{{!(activityInfo.signUpList.length)}}">
+      <view class="tag-item" wx:for="{{activityInfo.signUpList}}" wx:key="key" wx:for-item="item">
+        <van-tag id="signUp-tag" closeable="{{item.close && !expired}}" size="large" bind:close="onTagClose" type="success" data-index="{{index}}">
+          {{item.content}}
+        </van-tag>
+      </view>
+    </view>
+
+    <van-field id="askForLeave" clickable="{{!expired}}" label="请假列表" required="{{!expired && !publisher}}" disabled="{{expired}}" value="{{fieldAFLValue}}" wx:if="{{!expired}}" placeholder="点+号或输入" type="text" confirm-type="请假" bind:input='setAFLInput' bind:blur="updateActivityInfo" bind:click-icon="inputNameNote">
+      <view hidden="{{expired}}" slot="right-icon">
+        <image class="" src="../../images/add.png" />
+      </view>
+    </van-field>
+    <van-field id="askForLeave" clickable="{{!expired}}" label="请假列表" required="{{!expired && !publisher}}" disabled="{{expired}}" value="{{fieldAFLValue}}" wx:if="{{expired}}" placeholder="共有{{activityInfo.askForLeaveList.length}}人请假"  type="text" confirm-type="请假" bind:input='setAFLInput' bind:blur="updateActivityInfo" bind:click-icon="inputNameNote">
+      <view hidden="{{expired}}" slot="right-icon">
+        <image class="" src="../../images/add.png" />
+      </view>
+    </van-field>
+    <text class="tag-total" wx:if="{{!expired}}" hidden="{{!(activityInfo.askForLeaveList.length)}}">已有{{activityInfo.askForLeaveList.length}}人请假</text>
+    <view class="tag-list" hidden="{{!(activityInfo.askForLeaveList.length)}}">
+      <view class="tag-item" wx:for="{{activityInfo.askForLeaveList}}" wx:key="key" wx:for-item="item">
+        <van-tag id="askForLeave-tag" closeable="{{item.close && !expired}}" size="large" bind:close="onTagClose" type="success" data-index="{{index}}">
+          {{item.content}}
+        </van-tag>
+      </view>
+    </view>
+
+    <van-field readonly required="{{!expired && publisher}}" label="场地名称" placeholder="点+号选取活动位置" value="{{activityInfo.location.name}}" type="textarea" autosize bind:click-icon="toLocationPage">
+      <view hidden="{{locationDisabled}}" slot="right-icon">
+        <image class="" src="../../images/add.png" />
+      </view>
+    </van-field>
+    <van-field readonly required="{{!expired && publisher}}" label="场地地址" value="{{activityInfo.location.address}}" type="textarea" autosize bind:click-icon="openLocation">
+      <view hidden="{{!activityInfo.location.address.length}}" slot="right-icon">
+        <image src="../../images/info.png" />
+      </view>
+    </van-field>
+    <map id="map" longitude="{{activityInfo.location.longitude}}" latitude="{{activityInfo.location.latitude}}" scale="14" markers="{{markers}}" show-compass="true" enable-zoom="false" enable-scroll='{{false}}'></map>
+
+    <view hidden="{{expired}}" class="btns">
+      <van-button wx:if="{{publisher}}" type="primary" size="large" bind:click="submitActivityInfo">发布活动</van-button>
+      <van-button wx:if="{{publisher}}" disabled="{{publishNewActivity}}" type="default" size="large" open-type="share">转发活动</van-button>
+      <van-button wx:else disabled="{{publishNewActivity}}" type="primary" size="large" open-type="share">转发活动</van-button>
+    </view>
+
+    <van-divider contentPosition="center">相约同城，球场竞技</van-divider>
+  </view>
+</view>

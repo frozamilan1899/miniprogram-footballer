@@ -1,15 +1,14 @@
-//app.js
 App({
 
   globalData: {
     db: new Object(),
-    dbName: "matches",
     openid: "",
     sceneId: "",
+    previousActivitiesInfoKey: "previousActivitiesInfo",
     previousMatchesInfoKey: "previousMatchesInfo",
     newsInfoKey: "newsInfo",
     sharePicUrlKey: "sharePicUrl",
-    sceneIdList: [1007, 1008, 1014, 1017, 1037, 1038, 1044, 1064],
+    sceneIdList: [1007, 1008, 1014, 1017, 1037, 1044, 1096],
     shared: false,
     needAuthMsg: false,
   },
@@ -18,7 +17,7 @@ App({
     let option = JSON.stringify(options);
     console.log('app onLaunch option-----' + option);
     this.globalData.sceneId = options.scene;
-    this.onJudgeEntryScene();
+    this.onJudgeEntryScene(this.globalData.sceneId);
 
     if (!wx.cloud) {
       console.error('请使用 2.2.3 或以上的基础库以使用云能力');
@@ -57,13 +56,13 @@ App({
     let option = JSON.stringify(options);
     console.log('app onShow option-----' + option);
     this.globalData.sceneId = options.scene;
-    this.onJudgeEntryScene();
+    this.onJudgeEntryScene(this.globalData.sceneId);
     this.checkIfNeedAuthMsg();
   },
 
-  onJudgeEntryScene: function() {
+  onJudgeEntryScene: function(sceneId) {
     //从转发场景进入, sceneIdList包含所有转发场景值
-    if (-1 != this.globalData.sceneIdList.indexOf(this.globalData.sceneId)) {
+    if (-1 != this.globalData.sceneIdList.indexOf(sceneId)) {
       this.globalData.shared = true;
     } else {
       this.globalData.shared = false;

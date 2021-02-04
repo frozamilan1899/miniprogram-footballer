@@ -1,5 +1,3 @@
-<!--note.wxml-->
-
 <view class="container">
   <view class="page-body">
     <van-notify id="van-notify" />

@@ -1,4 +1,3 @@
-// note.js
 const app = getApp();
 var util = require('../../common-js/util.js');
 const db = app.globalData.db;
@@ -63,7 +62,7 @@ Page({
       },
       success: function (res) {
         console.log(res);
-        if ('edit' === that.data.previousPage) {
+        if ('editActivity' === that.data.previousPage) {
           let pages = getCurrentPages();
           if (pages.length >= 2) {
             let prevPage = pages[pages.length - 2];

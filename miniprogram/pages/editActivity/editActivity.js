@@ -1,4 +1,3 @@
-//edit.js
 const app = getApp();
 var util = require('../../common-js/util.js');
 const db = app.globalData.db;
@@ -8,11 +7,13 @@ import Dialog from '../../miniprogram_npm/@vant/weapp/dialog/dialog';
 
 Page({
   data: {
-    matchId: "",
-    matchInfo: {
+    dbName: "activities",
+    activityId: "",
+    activityInfo: {
       subject: "",
       time: "",
       showTime: "",
+      duration: "90",
       signUpList: [],
       askForLeaveList: [],
       location: {
@@ -32,7 +33,7 @@ Page({
       openid: "",
       content: ""
     },
-    publishNewMatch: true,
+    publishNewActivity: true,
     publisher: true,
     subjectDisabled: false,
     timeDisabled: false,
@@ -73,33 +74,36 @@ Page({
     // ------------------------------
     hideAuthMsgBtnFlag: true,
     // ------------------------------
-    nameNote: ''
+    nameNote: '',
+    // ------------------------------
+    showDurationPickerFlag: false,
+    durationColumns: ['30', '60', '90', '120', '150', '180']
   },
 
   onLoad: function(options) {
     console.log(options);
     if ('id' in options) {
-      // 打开已有数据的比赛，因为有id
-      this.data.publishNewMatch = false;
-      this.data.matchId = options.id;
+      // 打开已有数据的活动，因为有id
+      this.data.publishNewActivity = false;
+      this.data.activityId = options.id;
       if (app.globalData.shared) {
         this.queryDataFromCloud();
       } else {
         this.queryDataFromCache();
       }
     } else {
-      this.data.publishNewMatch = true;
+      this.data.publishNewActivity = true;
       //获取当前位置
       this.getCurrentLocation();
     }
 
-    // 设置转发比赛按钮是否可以操作
+    // 设置转发活动按钮是否可以操作
     this.setData({
-      publishNewMatch: this.data.publishNewMatch
+      publishNewActivity: this.data.publishNewActivity
     });
 
     // 这是胶囊按键里的“转发”按钮是否可以显示
-    if (this.data.publishNewMatch) {
+    if (this.data.publishNewActivity) {
       wx.hideShareMenu({});
     } else {
       wx.showShareMenu({
@@ -134,10 +138,11 @@ Page({
 
   onUnload: function() {
     this.renderPage(this, false);
-    this.data.publishNewMatch = true;
+    this.data.publishNewActivity = true;
     this.data.publisher = true;
     this.data.expired = false;
     this.data.showTimePickerFlag = false;
+    this.data.showDurationPickerFlag = false;
     this.data.hideAuthMsgBtnFlag = true;
   },
 
@@ -145,7 +150,7 @@ Page({
     console.log(option);
     this.drawShareImage();
     var shareTitle = "「咱们球场见」踢球啦！";
-    var sharePath = "/pages/edit/edit?id=" + this.data.matchId;
+    var sharePath = "/pages/editActivity/editActivity?id=" + this.data.activityId;
     return {
       title: shareTitle,
       imageUrl: this.data.sharePicUrl,
@@ -160,24 +165,24 @@ Page({
   },
 
   queryDataFromCloud: function() {
-    // 来自分享卡片，从云数据中获取指定id的比赛信息
+    // 来自分享卡片，从云数据中获取指定id的活动信息
     wx.showLoading({
       title: '加载中',
     });
     var that = this;
-    db.collection(app.globalData.dbName).where({
-      _id: that.data.matchId
+    db.collection(that.data.dbName).where({
+      _id: that.data.activityId
     }).get({
       success: res => {
         if (res.data.length > 0) {
-          that.data.matchInfo = res.data[0];
-          that.checkMatchExpired(that);
+          that.data.activityInfo = res.data[0];
+          that.checkActivityExpired(that);
           that.adjustUIItems(that);
         }
       },
       fail: res => {
         console.log(res);
-        that.notify('warning', '当前比赛已被发布者删除');
+        that.notify('warning', '当前活动已被发布者删除');
       },
       complete: res => {
         that.queryAndSetLoacation(that);
@@ -193,24 +198,24 @@ Page({
   },
 
   queryDataFromCache: function() {
-    // 从缓存中获取指定id的比赛信息
-    var cachedMatches = wx.getStorageSync(app.globalData.previousMatchesInfoKey);
-    for (let i = 0; i < cachedMatches.length; i++) {
-      let cachedMatch = cachedMatches[i];
-      if (this.data.matchId == cachedMatch._id) {
-        this.data.matchInfo = cachedMatch;
+    // 从缓存中获取指定id的活动信息
+    var cachedActivities = wx.getStorageSync(app.globalData.previousActivitiesInfoKey);
+    for (let i = 0; i < cachedActivities.length; i++) {
+      let cachedActivity = cachedActivities[i];
+      if (this.data.activityId == cachedActivity._id) {
+        this.data.activityInfo = cachedActivity;
         break;
       }
     }
-    this.checkMatchExpired(this);
+    this.checkActivityExpired(this);
     this.adjustUIItems(this);
     this.queryAndSetLoacation(this);
   },
 
-  checkMatchExpired: function(_this) {
-    // 检查本场比赛是否已过期
+  checkActivityExpired: function(_this) {
+    // 检查本场活动是否已过期
     var currentTime = new Date().getTime();
-    if (currentTime > _this.data.matchInfo.time) {
+    if (currentTime > _this.data.activityInfo.time) {
       _this.data.expired = true;
     } else {
       _this.data.expired = false;
@@ -218,15 +223,15 @@ Page({
   },
 
   adjustUIItems: function(_this) {
-    // 检查本场比赛是否为自己发布的比赛
-    if (_this.data.matchInfo._openid != app.globalData.openid) {
+    // 检查本场活动是否为自己发布的活动
+    if (_this.data.activityInfo._openid != app.globalData.openid) {
       _this.data.publisher = false;
       _this.renderPage(_this, true);
     }
-    // 若本场比赛已过期将部分控件设置为不可用
+    // 若本场活动已过期将部分控件设置为不可用
     if (_this.data.expired) {
       _this.renderPage(_this, true);
-      _this.notify('warning', '比赛已过期');
+      _this.notify('warning', '活动已过期');
     } else {
       _this.checkTagListForClose(_this);
     }
@@ -234,25 +239,25 @@ Page({
 
   checkTagListForClose: function(_this) {
     // 检查报名列表的身份，将close重新设置
-    for (let i = 0; i < _this.data.matchInfo.signUpList.length; i++) {
-      let signUpMap = _this.data.matchInfo.signUpList[i];
-      _this.data.matchInfo.signUpList[i].close = (signUpMap.openid == app.globalData.openid);
+    for (let i = 0; i < _this.data.activityInfo.signUpList.length; i++) {
+      let signUpMap = _this.data.activityInfo.signUpList[i];
+      _this.data.activityInfo.signUpList[i].close = (signUpMap.openid == app.globalData.openid);
     }
     // 检查请假列表的身份，将close重新设置
-    for (let i = 0; i < _this.data.matchInfo.askForLeaveList.length; i++) {
-      let askForLeaveMap = _this.data.matchInfo.askForLeaveList[i];
-      _this.data.matchInfo.askForLeaveList[i].close = (askForLeaveMap.openid == app.globalData.openid);
+    for (let i = 0; i < _this.data.activityInfo.askForLeaveList.length; i++) {
+      let askForLeaveMap = _this.data.activityInfo.askForLeaveList[i];
+      _this.data.activityInfo.askForLeaveList[i].close = (askForLeaveMap.openid == app.globalData.openid);
     }
   },
 
   queryAndSetLoacation: function(_this) {
-    // 获取并设置比赛位置信息
-    _this.data.currentLocation = _this.data.matchInfo.location;
-    var markers = _this.createMarkers(_this.data.matchInfo.location);
+    // 获取并设置活动位置信息
+    _this.data.currentLocation = _this.data.activityInfo.location;
+    var markers = _this.createMarkers(_this.data.activityInfo.location);
     _this.data.markers = markers;
-    console.log(_this.data.matchInfo);
+    console.log(_this.data.activityInfo);
     _this.setData({
-      matchInfo: _this.data.matchInfo,
+      activityInfo: _this.data.activityInfo,
       markers: _this.data.markers
     });
   },
@@ -276,9 +281,9 @@ Page({
   setSubjectInput: function(event) {
     var inputStr = event.detail;
     if (inputStr && inputStr.length > 0) {
-      this.data.matchInfo.subject = util.trim(inputStr);
+      this.data.activityInfo.subject = util.trim(inputStr);
     } else {
-      this.data.matchInfo.subject = '';
+      this.data.activityInfo.subject = '';
     }
   },
 
@@ -346,61 +351,61 @@ Page({
 
   checkRequiredItem: function() {
     // 必须项判空操作
-    if ('' === this.data.matchInfo.subject) {
-      this.notify('danger', '请填写比赛主题');
+    if ('' === this.data.activityInfo.subject) {
+      this.notify('danger', '请填写活动主题');
       return true;
     }
-    if ('' === this.data.matchInfo.showTime) {
+    if ('' === this.data.activityInfo.showTime) {
       this.notify('danger', '请选择日期和时间');
       return true;
     }
-    if ('' === this.data.matchInfo.location.name &&
-      '' === this.data.matchInfo.location.address) {
-      this.notify('danger', '请选取比赛位置');
+    if ('' === this.data.activityInfo.location.name &&
+      '' === this.data.activityInfo.location.address) {
+      this.notify('danger', '请选取活动位置');
       return true;
     }
     return false;
   },
 
-  submitMatchInfo: function() {
-    // 比赛信息发布或者追加
+  submitActivityInfo: function() {
+    // 活动信息发布或者追加
     if (this.checkRequiredItem()) {
       return;
     }
-    // 分场景：1）发布新比赛；2）更新比赛
-    if (this.data.publishNewMatch) {
-      this.addNewMatch();
+    // 分场景：1）发布新活动；2）更新活动
+    if (this.data.publishNewActivity) {
+      this.addNewActivity();
     } else {
-      this.updateMatchInfo();
+      this.updateActivityInfo();
     }
   },
 
-  addNewMatch: function() {
-    // 发布新的比赛
-    console.log("add match info");
-    // 添加这场比赛关联的openid
-    if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
-      this.data.matchInfo.referredOpeneIds.push(app.globalData.openid);
+  addNewActivity: function() {
+    // 发布新的活动
+    console.log("add activity info");
+    // 添加这场活动关联的openid
+    if (-1 == this.data.activityInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
+      this.data.activityInfo.referredOpeneIds.push(app.globalData.openid);
     }
     // 如果有报名信息添加
     if (this.data.signUpMap.content != '') {
-      this.data.matchInfo.signUpList.push(this.data.signUpMap);
+      this.data.activityInfo.signUpList.push(this.data.signUpMap);
     }
     // 如果有请假信息添加
     if (this.data.askForLeaveMap.content != '') {
-      this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveMap);
+      this.data.activityInfo.askForLeaveList.push(this.data.askForLeaveMap);
     }
-    this.data.matchInfo.updateTime = new Date().getTime();
+    this.data.activityInfo.updateTime = new Date().getTime();
     var that = this;
-    db.collection(app.globalData.dbName).add({
-      data: that.data.matchInfo,
+    db.collection(that.data.dbName).add({
+      data: that.data.activityInfo,
       success: function(res) {
         that.setData({
-          matchInfo: that.data.matchInfo
+          activityInfo: that.data.activityInfo
         });
         that.resetSUMap(that);
         that.resetAFLMap(that);
-        that.notify("success", "发布比赛成功");
+        that.notify("success", "发布活动成功");
         // 刷新list页面数据
         that.refreshListPage();
       }
@@ -415,13 +420,13 @@ Page({
     }, 2000);
   },
 
-  updateMatchInfo: function(e) {
-    if (this.data.publishNewMatch) {
+  updateActivityInfo: function(e) {
+    if (this.data.publishNewActivity) {
       console.log('input SU or AFL data');
       return;
     }
-    // 更新比赛信息
-    console.log("update match info");
+    // 更新活动信息
+    console.log("update activity info");
     // 判断报名信息的合法性
     if (this.checkSignUpList()) {
       return;
@@ -430,11 +435,11 @@ Page({
     if (this.checkAskForLeaveList()) {
       return;
     }
-    // 添加这场比赛关联的openid
-    if (-1 == this.data.matchInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
-      this.data.matchInfo.referredOpeneIds.push(app.globalData.openid);
+    // 添加这场活动关联的openid
+    if (-1 == this.data.activityInfo.referredOpeneIds.indexOf(app.globalData.openid)) {
+      this.data.activityInfo.referredOpeneIds.push(app.globalData.openid);
     }
-    var successText = '发布比赛';
+    var successText = '发布活动';
     if (e) {
       var tagId = e.target.id;
       if ("signUp" == tagId) { successText = '报名'; }
@@ -442,7 +447,7 @@ Page({
     }
     // 执行更新操作
     if (this.data.publisher) {
-      // 自己可以更新全部比赛数据
+      // 自己可以更新全部活动数据
       if (e) {
         var tagId = e.target.id;
         if ("signUp" == tagId && '' === this.data.signUpMap.content) { 
@@ -453,27 +458,27 @@ Page({
         }
       }
       var _this = this;
-      this.updateMatchInfoViaDB(this,
+      this.updateActivityInfoViaDB(this,
         success => function(res) {
           console.log('[update]: ', res);
           _this.notify('success', successText + "成功");
         },
         complete => function() {
           _this.setData({
-            matchInfo: _this.data.matchInfo
+            activityInfo: _this.data.activityInfo
           });
           _this.resetSUMap(_this);
           _this.resetAFLMap(_this);
           if (e) {
             _this.sendTemplateUpdateMsg(_this, "有人" + successText + "了");
           } else {
-            _this.sendTemplateUpdateMsg(_this, "比赛信息更新了");
+            _this.sendTemplateUpdateMsg(_this, "活动信息更新了");
           }
           // 刷新list页面数据
           _this.refreshListPage();
         }
       );
-      // 如果不是点了键盘的完成，而是发布比赛，则需要自动跳转页面
+      // 如果不是点了键盘的完成，而是发布活动，则需要自动跳转页面
       if (!e) {
         this.delayToHomePage(this);
       }
@@ -485,14 +490,14 @@ Page({
         return;
       }
       var _this = this;
-      this.updateMatchInfoViaCloud(this,
+      this.updateActivityInfoViaCloud(this,
         success => function(res) {
           console.log('[云函数] [update]: ', res);
           _this.notify('success', successText + "成功");
         },
         complete => function () {
           _this.setData({
-            matchInfo: _this.data.matchInfo
+            activityInfo: _this.data.activityInfo
           });
           _this.resetSUMap(_this);
           _this.resetAFLMap(_this);
@@ -507,8 +512,8 @@ Page({
   checkSignUpList: function() {
     if (this.data.signUpMap.content != '') {
       var existedInSUL = false;
-      for (let index = 0; index < this.data.matchInfo.signUpList.length; index++) {
-        let signUpMap = this.data.matchInfo.signUpList[index];
+      for (let index = 0; index < this.data.activityInfo.signUpList.length; index++) {
+        let signUpMap = this.data.activityInfo.signUpList[index];
         if (this.data.signUpMap.openid == signUpMap.openid &&
           this.data.signUpMap.content == signUpMap.content) {
           existedInSUL = true;
@@ -520,10 +525,10 @@ Page({
         this.resetSUMap(this);
         return true;
       } else {
-        this.data.matchInfo.signUpList.push(this.data.signUpMap);
+        this.data.activityInfo.signUpList.push(this.data.signUpMap);
         // 将请假列表中的报名人删除
         var _this = this;
-        this.data.matchInfo.askForLeaveList.forEach(function(item, index, arr) {
+        this.data.activityInfo.askForLeaveList.forEach(function(item, index, arr) {
           if (item.content == _this.data.signUpMap.content &&
             item.openid == _this.data.signUpMap.openid) {
             arr.splice(index, 1);
@@ -537,8 +542,8 @@ Page({
   checkAskForLeaveList: function() {
     if (this.data.askForLeaveMap.content != '') {
       var existedInAFL = false;
-      for (let index = 0; index < this.data.matchInfo.askForLeaveList.length; index++) {
-        let askForLeaveMap = this.data.matchInfo.askForLeaveList[index];
+      for (let index = 0; index < this.data.activityInfo.askForLeaveList.length; index++) {
+        let askForLeaveMap = this.data.activityInfo.askForLeaveList[index];
         if (this.data.askForLeaveMap.openid == askForLeaveMap.openid &&
           this.data.askForLeaveMap.content == askForLeaveMap.content) {
           existedInAFL = true;
@@ -550,10 +555,10 @@ Page({
         this.resetAFLMap(this);
         return true;
       } else {
-        this.data.matchInfo.askForLeaveList.push(this.data.askForLeaveMap);
+        this.data.activityInfo.askForLeaveList.push(this.data.askForLeaveMap);
         // 将报名列表中的请假人删除
         var _this = this;
-        this.data.matchInfo.signUpList.forEach(function(item, index, arr) {
+        this.data.activityInfo.signUpList.forEach(function(item, index, arr) {
           if (item.content == _this.data.askForLeaveMap.content &&
             item.openid == _this.data.askForLeaveMap.openid) {
             arr.splice(index, 1);
@@ -564,37 +569,38 @@ Page({
     return false;
   },
 
-  updateMatchInfoViaDB: function(_this, successCallback, completeCallback) {
+  updateActivityInfoViaDB: function(_this, successCallback, completeCallback) {
     console.log("db update");
-    _this.data.matchInfo.updateTime = new Date().getTime();
-    db.collection(app.globalData.dbName).doc(_this.data.matchId).update({
+    _this.data.activityInfo.updateTime = new Date().getTime();
+    db.collection(_this.data.dbName).doc(_this.data.activityId).update({
       data: {
-        subject: _this.data.matchInfo.subject,
-        time: _this.data.matchInfo.time,
-        showTime: _this.data.matchInfo.showTime,
-        location: _this.data.matchInfo.location,
-        askForLeaveList: _this.data.matchInfo.askForLeaveList,
-        signUpList: _this.data.matchInfo.signUpList,
-        updateTime: _this.data.matchInfo.updateTime,
-        referredOpeneIds: _this.data.matchInfo.referredOpeneIds
+        subject: _this.data.activityInfo.subject,
+        time: _this.data.activityInfo.time,
+        showTime: _this.data.activityInfo.showTime,
+        duration: _this.data.activityInfo.duration,
+        location: _this.data.activityInfo.location,
+        askForLeaveList: _this.data.activityInfo.askForLeaveList,
+        signUpList: _this.data.activityInfo.signUpList,
+        updateTime: _this.data.activityInfo.updateTime,
+        referredOpeneIds: _this.data.activityInfo.referredOpeneIds
       },
       success: successCallback(),
       complete: completeCallback()
     });
   },
 
-  updateMatchInfoViaCloud: function(_this, successCallback, completeCallback) {
+  updateActivityInfoViaCloud: function(_this, successCallback, completeCallback) {
     // 调用云函数更新
     console.log("cloud update");
-    _this.data.matchInfo.updateTime = new Date().getTime();
+    _this.data.activityInfo.updateTime = new Date().getTime();
     wx.cloud.callFunction({
-      name: 'update_match',
+      name: 'update_activity',
       data: {
-        id: _this.data.matchId,
-        signUpList: _this.data.matchInfo.signUpList,
-        askForLeaveList: _this.data.matchInfo.askForLeaveList,
-        updateTime: _this.data.matchInfo.updateTime,
-        referredOpeneIds: _this.data.matchInfo.referredOpeneIds
+        id: _this.data.activityId,
+        signUpList: _this.data.activityInfo.signUpList,
+        askForLeaveList: _this.data.activityInfo.askForLeaveList,
+        updateTime: _this.data.activityInfo.updateTime,
+        referredOpeneIds: _this.data.activityInfo.referredOpeneIds
       },
       success: successCallback(),
       complete: completeCallback()
@@ -608,6 +614,7 @@ Page({
     Dialog.confirm({
       title: '提示',
       message: '确认是否取消？',
+      zIndex: 999
     }).then(() => {
       // on confirm
       var that = this;
@@ -616,7 +623,7 @@ Page({
       var tagDeleteTip = '';
       if ("signUp-tag" == tagId) {
         // 删除自己的报名信息
-        that.data.matchInfo.signUpList.forEach(function (item, index, arr) {
+        that.data.activityInfo.signUpList.forEach(function (item, index, arr) {
           if (index === dataIndex) {
             arr.splice(index, 1);
           }
@@ -625,7 +632,7 @@ Page({
       }
       if ("askForLeave-tag" == tagId) {
         // 删除自己的请假信息
-        that.data.matchInfo.askForLeaveList.forEach(function (item, index, arr) {
+        that.data.activityInfo.askForLeaveList.forEach(function (item, index, arr) {
           if (index === dataIndex) {
             arr.splice(index, 1);
           }
@@ -633,11 +640,11 @@ Page({
         tagDeleteTip = "取消请假";
       }
       // 将关联的openid删除（发布者的openid除外）
-      if (that.data.matchInfo._openid != app.globalData.openid) {
+      if (that.data.activityInfo._openid != app.globalData.openid) {
         // 在报名列表中查找自己的报名信息
         let foundSU = false;
-        for (let i = 0; i < that.data.matchInfo.signUpList.length; i++) {
-          let signUpMap = that.data.matchInfo.signUpList[i];
+        for (let i = 0; i < that.data.activityInfo.signUpList.length; i++) {
+          let signUpMap = that.data.activityInfo.signUpList[i];
           if (signUpMap.openid == app.globalData.openid) {
             foundSU = true;
             break;
@@ -645,8 +652,8 @@ Page({
         }
         // 在请假列表中查找自己的请假信息
         let foundAFL = false;
-        for (let i = 0; i < that.data.matchInfo.askForLeaveList.length; i++) {
-          let askForLeaveMap = that.data.matchInfo.askForLeaveList[i];
+        for (let i = 0; i < that.data.activityInfo.askForLeaveList.length; i++) {
+          let askForLeaveMap = that.data.activityInfo.askForLeaveList[i];
           if (askForLeaveMap.openid == app.globalData.openid) {
             foundAFL = true;
             break;
@@ -654,7 +661,7 @@ Page({
         }
         if (!foundSU && !foundAFL) {
           // 删除关联的openid
-          that.data.matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+          that.data.activityInfo.referredOpeneIds.forEach(function (item, index, arr) {
             if (item === app.globalData.openid) {
               arr.splice(index, 1);
             }
@@ -663,14 +670,14 @@ Page({
       }
       // 执行更新操作
       if (that.data.publisher) {
-        that.updateMatchInfoViaDB(that,
+        that.updateActivityInfoViaDB(that,
           success => function (res) {
             console.log('[update]: ', res);
             that.notify('success', tagDeleteTip + "成功");
           },
           complete => function (res) {
             that.setData({
-              matchInfo: that.data.matchInfo
+              activityInfo: that.data.activityInfo
             });
             that.resetSUMap(that);
             that.resetAFLMap(that);
@@ -680,14 +687,14 @@ Page({
           }
         );
       } else {
-        that.updateMatchInfoViaCloud(that,
+        that.updateActivityInfoViaCloud(that,
           success => function (res) {
             console.log('[云函数] [update]: ', res);
             that.notify('success', tagDeleteTip + "成功");
           },
           complete => function () {
             that.setData({
-              matchInfo: that.data.matchInfo
+              activityInfo: that.data.activityInfo
             });
             that.resetSUMap(that);
             that.resetAFLMap(that);
@@ -706,14 +713,14 @@ Page({
     var pages = getCurrentPages();
     if (pages.length >= 2) {
       var previousPage = pages[pages.length - 2];
-      if (previousPage && previousPage.route === 'pages/list/list') {
+      if (previousPage && previousPage.route === 'pages/activity/activity') {
         previousPage.onQuery(previousPage);
       }
     }
   },
 
   toListPage: function() {
-    var page_url = '/pages/list/list';
+    var page_url = '/pages/activity/activity';
     if (this.data.publisher) {
       var pages = getCurrentPages();
       if (pages.length >= 2) {
@@ -755,13 +762,13 @@ Page({
         console.log(res);
       },
       complete: function(res) {
-        var matchInfo = that.data.matchInfo;
-        matchInfo.location = that.data.currentLocation;
-        that.data.matchInfo = matchInfo;
-        var markers = that.createMarkers(that.data.matchInfo.location);
+        var activityInfo = that.data.activityInfo;
+        activityInfo.location = that.data.currentLocation;
+        that.data.activityInfo = activityInfo;
+        var markers = that.createMarkers(that.data.activityInfo.location);
         that.data.markers = markers;
         that.setData({
-          matchInfo: matchInfo,
+          activityInfo: activityInfo,
           markers: that.data.markers
         });
       }
@@ -782,13 +789,13 @@ Page({
     _this.data.currentLocation.latitude = location.latitude;
     _this.data.currentLocation.name = location.name;
     _this.data.currentLocation.address = location.address;
-    var matchInfo = _this.data.matchInfo;
-    matchInfo.location = _this.data.currentLocation;
-    _this.data.matchInfo = matchInfo;
-    var markers = _this.createMarkers(_this.data.matchInfo.location);
+    var activityInfo = _this.data.activityInfo;
+    activityInfo.location = _this.data.currentLocation;
+    _this.data.activityInfo = activityInfo;
+    var markers = _this.createMarkers(_this.data.activityInfo.location);
     _this.data.markers = markers;
     _this.setData({
-      matchInfo: matchInfo,
+      activityInfo: activityInfo,
       markers: _this.data.markers
     });
   },
@@ -806,7 +813,7 @@ Page({
   },
 
   toLocationPage: function() {
-    var page_url = '/pages/location/location?from=edit';
+    var page_url = '/pages/location/location?from=editActivity';
     wx.navigateTo({
       url: page_url,
     });
@@ -839,10 +846,38 @@ Page({
       detail,
       currentTarget
     } = event;
-    this.data.matchInfo.time = detail;
-    this.data.matchInfo.showTime = util.formatDate(new Date(detail), "yyyy-MM-dd hh:mm");
+    this.data.activityInfo.time = detail;
+    this.data.activityInfo.showTime = util.formatDate(new Date(detail), "yyyy-MM-dd hh:mm");
     this.setData({
-      matchInfo: this.data.matchInfo
+      activityInfo: this.data.activityInfo
+    });
+  },
+
+  showDurationPicker: function() {
+    if (!this.data.timeDisabled) {
+      this.setData({
+        showDurationPickerFlag: true
+      });
+    }
+  },
+
+  onDurationPickerCancel: function(event) {
+    this.setData({
+      showDurationPickerFlag: false
+    });
+  },
+
+  onDurationPickerConfirm: function(event) {
+    this.setData({
+      showDurationPickerFlag: false
+    });
+    const {
+      detail,
+      currentTarget
+    } = event;
+    this.data.activityInfo.duration = detail.value;
+    this.setData({
+      activityInfo: this.data.activityInfo
     });
   },
 
@@ -1000,8 +1035,8 @@ Page({
   sendTemplateUpdateMsg: function (_this, detail) {
     // 调用云函数发送订阅消息
     console.log("send template update message");
-    for(let i = 0; i < _this.data.matchInfo.referredOpeneIds.length; i++) {
-      let openid = _this.data.matchInfo.referredOpeneIds[i];
+    for(let i = 0; i < _this.data.activityInfo.referredOpeneIds.length; i++) {
+      let openid = _this.data.activityInfo.referredOpeneIds[i];
       // 只发送给除自己之外的参与者
       if (openid != app.globalData.openid) {
         var other_openid = openid;
@@ -1009,13 +1044,13 @@ Page({
           name: 'send_template_update',
           data: {
             openid: other_openid,
-            page: "/pages/edit/edit",
-            parameter: "?id="+_this.data.matchId,
-            subject: util.getSubStrBylen(_this.data.matchInfo.subject, 17),
-            showTime: _this.data.matchInfo.showTime,
+            page: "/pages/editActivity/editActivity",
+            parameter: "?id="+_this.data.activityId,
+            subject: util.getSubStrBylen(_this.data.activityInfo.subject, 17),
+            showTime: _this.data.activityInfo.showTime,
             detail: detail,
-            signUpCount: _this.data.matchInfo.signUpList.length,
-            position: util.getSubStrBylen(_this.data.matchInfo.location.name, 17)
+            signUpCount: _this.data.activityInfo.signUpList.length,
+            position: util.getSubStrBylen(_this.data.activityInfo.location.name, 17)
           },
           success: function(res) {
             // 更改别人的订阅消息状态, 需要调用云函数
@@ -1065,6 +1100,7 @@ Page({
       Dialog.confirm({
         title: '提示',
         message: '还没有设置名称备注，去设置？',
+        zIndex: 999
       }).then(() => {
         // on confirm
         that.toNotePage();
@@ -1091,7 +1127,7 @@ Page({
         // 延迟0.5秒自动提交
         var that = this;
         setTimeout(function () {
-          that.updateMatchInfo(e);
+          that.updateActivityInfo(e);
         }, 500);
       } else if ("askForLeave" == tagId) {
         this.data.askForLeaveMap = {
@@ -1107,14 +1143,14 @@ Page({
         // 延迟0.5秒自动提交
         var that = this;
         setTimeout(function () {
-          that.updateMatchInfo(e);
+          that.updateActivityInfo(e);
         }, 500);
       }
     }
   },
 
   toNotePage: function () {
-    var page_url = '/pages/note/note?from=edit';
+    var page_url = '/pages/note/note?from=editActivity';
     wx.navigateTo({
       url: page_url,
     });

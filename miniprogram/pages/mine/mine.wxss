@@ -1,5 +1,3 @@
-/* mine.wxss */
-
 .page-body {
   background: #F6F6F6;
   display: flex;

@@ -1,5 +1,3 @@
-<!--list.wxml-->
-
 <view class="container">
   <view class="page-body">
     <van-notify id="van-notify" />
@@ -12,7 +10,7 @@
       <open-data type="userNickName"></open-data>
     </view>
 
-    <van-button type="primary" size="large" bind:click="toEditPage"> 新比赛 </van-button>
+    <van-button type="primary" size="large" bind:click="toEditPage"> 新活动 </van-button>
 
     <view class="skeleton" hidden="{{dataLoaded}}">
       <van-skeleton title row="4" loading="{{!dataLoaded}}" />
@@ -21,19 +19,21 @@
       <van-skeleton title row="4" loading="{{!dataLoaded}}" />
     </view>
 
-    <van-cell-group wx:if="{{matches.length}}" title="近期参与过的所有比赛">
-      <van-swipe-cell right-width="{{65}}" wx:for="{{matches}}" wx:key="key" wx:for-item="item" data-index="{{index}}" async-close bind:close="onCellClose">
-        <van-cell center is-link="{{!item.hasNewMatchInfo}}" border clickable title="比赛主题：{{item.subject}}" use-label-slot="{{true}}" url="../edit/edit?id={{item._id}}">
+    <van-cell-group wx:if="{{activities.length}}" title="近期参与过的所有活动">
+      <van-swipe-cell right-width="{{65}}" wx:for="{{activities}}" wx:key="key" wx:for-item="item" data-index="{{index}}" async-close bind:close="onCellClose">
+        <van-cell center is-link="{{!item.hasNewActivityInfo}}" border clickable title="活动主题：{{item.subject}}" use-label-slot="{{true}}" url="../editActivity/editActivity?id={{item._id}}">
           <view slot="right-icon">
-            <view hidden="{{!item.hasNewMatchInfo}}">
+            <view hidden="{{!item.hasNewActivityInfo}}">
               <van-tag round type="danger">new</van-tag>
             </view>
           </view>
           <view slot="label">
-            <view>比赛时间：{{item.showTime}}</view>
+            <view>活动时间：{{item.showTime}}</view>
+            <view>活动时长：{{item.duration}}分钟</view>
             <view>报名人数：{{item.signUpList.length}}人</view>
             <view>请假人数：{{item.askForLeaveList.length}}人</view>
-            <view>比赛地点：{{item.location.name}}（{{item.location.address}}）</view>
+            <view>活动地点：{{item.location.name}}</view>
+            <!-- <view> -- {{item.location.address}}</view> -->
           </view>
         </van-cell>
         <view slot="right" class="van-swipe-cell__right">删除</view>

@@ -1,5 +1,3 @@
-<!--mine.wxml-->
-
 <view class="container">
   <view class="page-body">
     <view class="userInfo">
@@ -19,7 +17,7 @@
       </van-cell>
       <van-cell is-link center clickable title="常用位置" use-label-slot="{{true}}" url="../location/location?from=mine">
         <view slot="label">
-          <view>添加常用比赛场地，方便比赛位置的选取</view>
+          <view>添加常用场地，方便位置选取</view>
         </view>
       </van-cell>
     </van-cell-group>

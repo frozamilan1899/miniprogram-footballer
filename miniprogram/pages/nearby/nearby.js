@@ -1,4 +1,3 @@
-// nearby.js
 const app = getApp();
 const db = app.globalData.db;
 const _ = db.command;
@@ -8,6 +7,7 @@ var util = require('../../common-js/util.js');
 Page({
 
   data: {
+    dbName: "activities",
     option1: [{
         text: '所有距离',
         value: 0
@@ -45,8 +45,8 @@ Page({
     defaulValue1: 0,
     defaulValue2: 'a',
     // -----------------------------
-    allMatches: [],
-    displayMatches: [],
+    allActivities: [],
+    displayActivities: [],
     middleDataArray: [{
       id: '',
       distToLoc: 0,
@@ -70,95 +70,109 @@ Page({
 
   onShow: function() {
     if (!this.data.dataLoaded) {
-      this.queryAllMatches(this);
+      this.queryAllActivities(this);
     }
   },
 
-  onHide: function() {
-    this.data.dataLoaded = false;
-  },
-
   onUnload: function() {
-    this.data.allMatches = [];
-    this.data.displayMatches = [];
+    this.data.allActivities = [];
+    this.data.displayActivities = [];
     this.data.dataLoaded = false;
   },
 
-  queryAllMatches: function(_this) {
+  onPullDownRefresh: function() {
+    console.log("nearby->onPullDownRefresh");
+    this.queryAllActivities(this);
+  },
+
+  queryAllActivities: function(_this) {
+    wx.showLoading({
+      title: '加载中...',
+    });
     // 如果没有指定limit，则默认且最多取20条记录
     var currentTime = (new Date()).getTime();
-    db.collection(app.globalData.dbName).where({
+    db.collection(_this.data.dbName).where({
       time: _.gte(currentTime)
     }).orderBy('time', 'asc').get({
       success: res => {
         console.log(res.data);
-        _this.data.allMatches = res.data;
+        _this.data.allActivities = res.data;
         _this.createMiddleData(_this);
-        _this.filterMatches(_this);
-        _this.checkCanIOpenDisplayMatches(_this);
+        _this.filterActivities(_this);
+        _this.checkCanIOpenDisplayActivities(_this);
         _this.setData({
-          displayMatches: _this.data.displayMatches
+          displayActivities: _this.data.displayActivities
         });
         _this.data.dataLoaded = true;
       },
       fail: err => {
         console.error(err);
+      },
+      complete: res => {
+        wx.hideLoading();
+        wx.stopPullDownRefresh();
       }
     });
+
+    // 10秒钟后没有数据返回，关闭loading
+    setTimeout(function () {
+      wx.hideLoading();
+      wx.stopPullDownRefresh();
+    }, 10000);
   },
 
   createMiddleData: function(_this) {
     _this.data.middleDataArray = [];
     var currentTime = (new Date()).getTime();
-    for (let i = 0; i < _this.data.allMatches.length; i++) {
-      let match = _this.data.allMatches[i];
-      let distToLoc = util.getDistance(_this.data.currentCoordinate.latitude, _this.data.currentCoordinate.longitude, match.location.latitude, match.location.longitude);
-      let intervalToNow = match.time - currentTime;
+    for (let i = 0; i < _this.data.allActivities.length; i++) {
+      let activity = _this.data.allActivities[i];
+      let distToLoc = util.getDistance(_this.data.currentCoordinate.latitude, _this.data.currentCoordinate.longitude, activity.location.latitude, activity.location.longitude);
+      let intervalToNow = activity.time - currentTime;
       var middleData = {
-        id: match._id,
+        id: activity._id,
         distToLoc: distToLoc,
         intervalToNow: intervalToNow,
       };
       _this.data.middleDataArray.push(middleData);
-      _this.data.allMatches[i].distToLoc = distToLoc.toFixed(2);
+      _this.data.allActivities[i].distToLoc = distToLoc.toFixed(2);
     }
   },
 
-  filterMatches: function(_this) {
+  filterActivities: function(_this) {
     // 转换选项值
     var distance = _this.convertOption1ValueToRealData(_this.data.option1Value);
     var intervalTime = _this.convertOption2ValueToRealData(_this.data.option2Value);
-    var tmpMatchIds = [];
+    var tmpActivityIds = [];
     if (0 == distance && 0 == intervalTime) {
-      _this.data.displayMatches = _this.data.allMatches;
+      _this.data.displayActivities = _this.data.allActivities;
     } else {
       // 核心过滤
       for (let i = 0; i < _this.data.middleDataArray.length; i++) {
         let middleData = _this.data.middleDataArray[i];
         if (0 == distance) {
           if (intervalTime >= middleData.intervalToNow) {
-            tmpMatchIds.push(middleData.id);
+            tmpActivityIds.push(middleData.id);
           }
         }
         else if (0 == intervalTime) {
           if (distance >= middleData.distToLoc) {
-            tmpMatchIds.push(middleData.id);
+            tmpActivityIds.push(middleData.id);
           }
         }
         else {
           if (distance >= middleData.distToLoc && intervalTime >= middleData.intervalToNow) {
-            tmpMatchIds.push(middleData.id);
+            tmpActivityIds.push(middleData.id);
           }
         }
       }
-      // 组装displayMatches
-      _this.data.displayMatches = [];
-      for (let i = 0; i < tmpMatchIds.length; i++) {
-        let matchId = tmpMatchIds[i];
-        for (let j = 0; j < _this.data.allMatches.length; j++) {
-          let match = _this.data.allMatches[j];
-          if (matchId == match._id) {
-            _this.data.displayMatches.push(match);
+      // 组装displayActivities
+      _this.data.displayActivities = [];
+      for (let i = 0; i < tmpActivityIds.length; i++) {
+        let activityId = tmpActivityIds[i];
+        for (let j = 0; j < _this.data.allActivities.length; j++) {
+          let activity = _this.data.allActivities[j];
+          if (activityId == activity._id) {
+            _this.data.displayActivities.push(activity);
             break;
           }
         }
@@ -166,38 +180,38 @@ Page({
     }
   },
 
-  checkCanIOpenDisplayMatches: function(_this) {
-    for (let i = 0; i < _this.data.displayMatches.length; i++) {
-      let displayMatch = _this.data.displayMatches[i];
-      if (-1 == displayMatch.referredOpeneIds.indexOf(app.globalData.openid)) {
-        _this.data.displayMatches[i].canOpen = false;
-        _this.data.displayMatches[i].navigatePage = '';
+  checkCanIOpenDisplayActivities: function(_this) {
+    for (let i = 0; i < _this.data.displayActivities.length; i++) {
+      let displayActivity = _this.data.displayActivities[i];
+      if (-1 == displayActivity.referredOpeneIds.indexOf(app.globalData.openid)) {
+        _this.data.displayActivities[i].canOpen = false;
+        _this.data.displayActivities[i].navigatePage = '';
       } else {
-        _this.data.displayMatches[i].canOpen = true;
-        _this.data.displayMatches[i].navigatePage = '../edit/edit?id=' + displayMatch._id;
+        _this.data.displayActivities[i].canOpen = true;
+        _this.data.displayActivities[i].navigatePage = '../editActivity/editActivity?id=' + displayActivity._id;
       }
     }
   },
 
   distanceChanged: function(value) {
     console.log(value);
-    this.data.displayMatches = [];
+    this.data.displayActivities = [];
     this.data.option1Value = value.detail;
-    this.filterMatches(this);
-    this.checkCanIOpenDisplayMatches(this);
+    this.filterActivities(this);
+    this.checkCanIOpenDisplayActivities(this);
     this.setData({
-      displayMatches: this.data.displayMatches
+      displayActivities: this.data.displayActivities
     });
   },
 
   intervalTimeChanged: function(value) {
     console.log(value);
-    this.data.displayMatches = [];
+    this.data.displayActivities = [];
     this.data.option2Value = value.detail;
-    this.filterMatches(this);
-    this.checkCanIOpenDisplayMatches(this);
+    this.filterActivities(this);
+    this.checkCanIOpenDisplayActivities(this);
     this.setData({
-      displayMatches: this.data.displayMatches
+      displayActivities: this.data.displayActivities
     });
   },
 
@@ -267,7 +281,7 @@ Page({
         console.log(res);
       },
       complete: function(res) {
-        _this.queryAllMatches(_this);
+        _this.queryAllActivities(_this);
       }
     })
   },

@@ -1,7 +1,7 @@
 {
   "pages": [
-    "pages/list/list",
-    "pages/edit/edit",
+    "pages/activity/activity",
+    "pages/editActivity/editActivity",
     "pages/location/location",
     "pages/mine/mine",
     "pages/note/note",
@@ -32,10 +32,10 @@
     "borderStyle": "white",
     "list": [
       {
-        "pagePath": "pages/list/list",
-        "text": "比赛",
-        "iconPath": "./images/list.png",
-        "selectedIconPath": "./images/list_selected.png"
+        "pagePath": "pages/activity/activity",
+        "text": "活动",
+        "iconPath": "./images/activity.png",
+        "selectedIconPath": "./images/activity_selected.png"
       },
       {
         "pagePath": "pages/nearby/nearby",

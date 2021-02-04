@@ -8,7 +8,7 @@ const db = cloud.database();
 exports.main = async (event, context) => {
   console.log(event);
   try {
-    return await db.collection('matches').doc(event.id).update({
+    return await db.collection('activities').doc(event.id).update({
       data: {
         signUpList: event.signUpList,
         askForLeaveList: event.askForLeaveList,

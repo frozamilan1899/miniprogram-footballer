@@ -1,4 +1,3 @@
-//list.js
 const app = getApp();
 const db = app.globalData.db;
 const _ = db.command;
@@ -9,13 +8,14 @@ import Dialog from '../../miniprogram_npm/@vant/weapp/dialog/dialog';
 Page({
 
   data: {
+    dbName: "activities",
     openid: '',
-    matches: [],
+    activities: [],
     dataLoaded: false
   },
 
   onLoad: function (options) {
-    console.log('list page onLoad');
+    console.log('activity page onLoad');
     // 显示胶囊按键里的“转发”按钮
     wx.showShareMenu({
       withShareTicket: true
@@ -34,28 +34,28 @@ Page({
   },
 
   onShow: function() {
-    console.log("list->onShow");
+    console.log("activity->onShow");
     if (!this.data.dataLoaded) {
       this.onQuery(this);
     }
   },
 
   onPullDownRefresh: function() {
-    console.log("list->onPullDownRefresh");
+    console.log("activity->onPullDownRefresh");
     this.onQuery(this);
   },
 
   onReachBottom: function() {
-    console.log("list->onReachBottom");
-    if (this.data.matches.length > 0) {
-      Notify({ type: 'success', message: '左滑可以删除比赛，进入详情可以转发比赛', duration: 3000 });
+    console.log("activity->onReachBottom");
+    if (this.data.activities.length > 0) {
+      Notify({ type: 'success', message: '左滑可以删除活动，进入详情可以转发活动', duration: 3000 });
     }
   },
 
   onShareAppMessage: function (option) {
     console.log(option);
-    var shareTitle = "足球友谊赛，等你来发布！";
-    var sharePath = "/pages/list/list";
+    var shareTitle = "发布足球活动和比赛，精彩\"有\"你！";
+    var sharePath = "/pages/activity/activity";
     return {
       title: shareTitle,
       imageUrl: "../../images/playground.png",
@@ -75,65 +75,64 @@ Page({
       title: '加载中...',
     });
     // 如果没有指定limit，则默认且最多取20条记录
-    db.collection(app.globalData.dbName).where(_.or([
+    db.collection(_this.data.dbName).where(_.or([
       {
         _openid: _this.data.openid
       },
       {
-        referredOpeneIds: _this.data.openid
+        referredOpenIds: _this.data.openid
       }
     ])).orderBy('updateTime', 'desc').get({
       success: res => {
         console.log('[数据库] [查询记录] 成功: ', res.data);
-        var matches = res.data;
-        _this.data.matches = matches;
-        if (0 == _this.data.matches.length) {
-          _this.notify('primary', '暂时没有历史比赛数据');
+        _this.data.activities = res.data;
+        if (0 == _this.data.activities.length) {
+          _this.notify('primary', '暂时没有历史活动数据');
         } else {
-          // 从缓存中获取比赛信息
-          var cachedMatches = wx.getStorageSync(app.globalData.previousMatchesInfoKey);
-          if (cachedMatches && cachedMatches.length > 0) {
+          // 从缓存中获取活动信息
+          var cachedActivities = wx.getStorageSync(app.globalData.previousActivitiesInfoKey);
+          if (cachedActivities && cachedActivities.length > 0) {
             // 对比是否有新增数据
-            for (let i = 0; i < _this.data.matches.length; i++) {
-              var match = _this.data.matches[i];
+            for (let i = 0; i < _this.data.activities.length; i++) {
+              var activity = _this.data.activities[i];
               var existedInCache = false;
-              for (let j = 0; j < cachedMatches.length; j++) {
-                var cachedMatch = cachedMatches[j];
-                if (match._id == cachedMatch._id) {
-                  if (match.updateTime > cachedMatch.updateTime) {
-                    _this.data.matches[i].hasNewMatchInfo = true;
+              for (let j = 0; j < cachedActivities.length; j++) {
+                var cachedActivity = cachedActivities[j];
+                if (activity._id == cachedActivity._id) {
+                  if (activity.updateTime > cachedActivity.updateTime) {
+                    _this.data.activities[i].hasNewActivityInfo = true;
                   }
                   existedInCache = true;
                   break;
                 }
               }
               if (!existedInCache) {
-                _this.data.matches[i].hasNewMatchInfo = true;
+                _this.data.activities[i].hasNewActivityInfo = true;
               }
             }
           }
-          // 检查每场比赛是否已过期
+          // 检查各活动是否已过期
           var currentTime = new Date().getTime();
-          for (let i = 0; i < _this.data.matches.length; i++) {
-            if (currentTime > _this.data.matches[i].time) {
-              _this.data.matches[i].expired = true;
+          for (let i = 0; i < _this.data.activities.length; i++) {
+            if (currentTime > _this.data.activities[i].time) {
+              _this.data.activities[i].expired = true;
             }
           }
         }
         _this.data.dataLoaded = true;
         _this.setData({
-          matches: _this.data.matches,
+          activities: _this.data.activities,
           dataLoaded: _this.data.dataLoaded
         });
         // 缓存已获取到的比赛信息
         wx.setStorage({
-          key: app.globalData.previousMatchesInfoKey,
-          data: _this.data.matches,
+          key: app.globalData.previousActivitiesInfoKey,
+          data: _this.data.activities,
         });
       },
       fail: err => {
         console.error('[数据库] [查询记录] 失败：', err);
-        _this.notify('warning', '获取比赛数据失败');
+        _this.notify('warning', '获取活动数据失败');
       },
       complete: res => {
         wx.hideLoading();
@@ -158,40 +157,41 @@ Page({
         instance.close();
         break;
       case 'right':
-        this.deleteMatch(dataIndex, instance);
+        this.deleteActivity(dataIndex, instance);
         break;
     }
   },
 
-  deleteMatch: function (dataIndex, instance) {
-    var matchInfo = this.data.matches[dataIndex];
-    var _id = matchInfo._id;
-    var _openid = matchInfo._openid;
+  deleteActivity: function (dataIndex, instance) {
+    var activityInfo = this.data.activities[dataIndex];
+    var _id = activityInfo._id;
+    var _openid = activityInfo._openid;
     var that = this;
-    // 判断比赛是否为自己发布的
+    // 判断活动是否为自己发布的
     if (_openid != that.data.openid) {
       Dialog.confirm({
         title: '提示',
-        message: '此操作仅会删除您的报名或请假数据，不会删除原UP主的比赛，是否继续删除？',
+        message: '此操作仅会删除您的报名或请假数据，不会删除原活动数据，是否继续删除？',
+        zIndex: 999
       }).then(() => {
         // on confirm
         wx.showLoading({
           title: '删除中...',
         });
         // 删除自己的报名信息
-        matchInfo.signUpList.forEach(function (item, index, arr) {
+        activityInfo.signUpList.forEach(function (item, index, arr) {
           if (item.openid === that.data.openid) {
             arr.splice(index, 1);
           }
         });
         // 删除自己的请假信息
-        matchInfo.askForLeaveList.forEach(function (item, index, arr) {
+        activityInfo.askForLeaveList.forEach(function (item, index, arr) {
           if (item.openid === that.data.openid) {
             arr.splice(index, 1);
           }
         });
         // 删除关联自己的openid
-        matchInfo.referredOpeneIds.forEach(function (item, index, arr) {
+        activityInfo.referredOpeneIds.forEach(function (item, index, arr) {
           if (item === that.data.openid) {
             arr.splice(index, 1);
           }
@@ -199,21 +199,21 @@ Page({
 
         // 调用云函数更新
         wx.cloud.callFunction({
-          name: 'update_match',
+          name: 'update_activity',
           data: {
             id: _id,
-            signUpList: matchInfo.signUpList,
-            askForLeaveList: matchInfo.askForLeaveList,
+            signUpList: activityInfo.signUpList,
+            askForLeaveList: activityInfo.askForLeaveList,
             updateTime: new Date().getTime(),
-            referredOpeneIds: matchInfo.referredOpeneIds
+            referredOpenIds: activityInfo.referredOpenIds
           },
           success: function (res) {
             console.log('[云函数] [update]: ', res);
             that.onQuery(that);
-            that.notify('success', '删除比赛数据成功');
+            that.notify('success', '删除成功');
           },
           fail: function () {
-            that.notify('warning', '删除比赛数据失败');
+            that.notify('warning', '删除失败');
           },
           complete: function () {
             wx.hideLoading();
@@ -227,19 +227,20 @@ Page({
     } else {
       Dialog.confirm({
         title: '提示',
-        message: '作为比赛的UP主，此操作会删除参与这场比赛所有人的报名或请假数据，是否继续删除？',
+        message: '此操作会删除参与这场活动的所有数据，包括所有人的报名或请假数据，是否继续删除？',
+        zIndex: 999
       }).then(() => {
         // on confirm
         wx.showLoading({
           title: '删除中...',
         });
-        db.collection(app.globalData.dbName).doc(_id).remove({
+        db.collection(that.dbName).doc(_id).remove({
           success: function() {
             that.onQuery(that);
-            that.notify('success', '删除比赛成功');
+            that.notify('success', '删除活动成功');
           },
           fail: function () {
-            that.notify('warning', '删除比赛失败');
+            that.notify('warning', '删除活动失败');
           },
           complete: function () {
             wx.hideLoading();
@@ -254,7 +255,7 @@ Page({
   },
 
   toEditPage: function(e) {
-    var page_url = '/pages/edit/edit';
+    var page_url = '/pages/editActivity/editActivity';
     wx.navigateTo({
       url: page_url,
     });

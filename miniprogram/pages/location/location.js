@@ -1,4 +1,3 @@
-// location.js
 const app = getApp();
 const db = app.globalData.db;
 
@@ -63,7 +62,7 @@ Page({
     if ('left' === e.detail) return;
     if ('outside' === e.detail) return;
 
-    if ('edit' === this.data.previousPage) {
+    if ('editActivity' === this.data.previousPage) {
       var dataIndex = parseInt(e.target.dataset.index);
       var location = this.data.locations[dataIndex];
       let pages = getCurrentPages();

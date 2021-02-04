@@ -1,5 +1,3 @@
-<!--nearby.wxml-->
-
 <view class="container">
   <view class="page-body">
     <van-dropdown-menu>
@@ -7,12 +5,13 @@
       <van-dropdown-item value="{{ defaulValue2 }}" options="{{ option2 }}" bind:change="intervalTimeChanged" />
     </van-dropdown-menu>
 
-    <van-cell-group wx:if="{{displayMatches.length}}" title="筛选出的近期所有比赛">
-      <van-cell center is-link="{{item.canOpen}}" border clickable title="比赛主题：{{item.subject}}" use-label-slot="{{true}}" url="{{item.navigatePage}}" wx:for="{{displayMatches}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
+    <van-cell-group wx:if="{{displayActivities.length}}" title="筛选出的近期所有活动">
+      <van-cell center is-link="{{item.canOpen}}" border clickable title="活动主题：{{item.subject}}" use-label-slot="{{true}}" url="{{item.navigatePage}}" wx:for="{{displayActivities}}" wx:key="key" wx:for-item="item" data-index="{{index}}">
         <view slot="label">
-          <view>比赛时间：{{item.showTime}}</view>
+          <view>活动时间：{{item.showTime}}</view>
+          <view>活动时长：{{item.duration}}分钟</view>
           <view>参与人数：{{item.signUpList.length}}人</view>
-          <view>比赛地点：{{item.location.name}}（{{item.location.address}}）</view>
+          <view>活动地点：{{item.location.name}}（{{item.location.address}}）</view>
           <view>当前距离：{{item.distToLoc}} km</view>
         </view>
       </van-cell>

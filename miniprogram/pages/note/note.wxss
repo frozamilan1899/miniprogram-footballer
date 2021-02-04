@@ -1,5 +1,3 @@
-/* note.wxss */
-
 .page-body {
   background: white;
   display: flex;

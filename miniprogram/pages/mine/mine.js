@@ -1,4 +1,3 @@
-// mine.js
 Page({
 
   data: {
