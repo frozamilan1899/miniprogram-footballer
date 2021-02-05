@@ -191,7 +191,7 @@ Page({
           }
         });
         // 删除关联自己的openid
-        activityInfo.referredOpeneIds.forEach(function (item, index, arr) {
+        activityInfo.referredOpenIds.forEach(function (item, index, arr) {
           if (item === that.data.openid) {
             arr.splice(index, 1);
           }

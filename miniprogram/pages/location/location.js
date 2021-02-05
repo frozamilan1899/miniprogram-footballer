@@ -104,6 +104,9 @@ Page({
 
   queryLocationRecord: function (_this) {
     console.log("query location record");
+    wx.showLoading({
+      title: '加载中...',
+    });
     db.collection("locations").where({
       _openid: app.globalData.openid
     }).get({
@@ -116,6 +119,10 @@ Page({
       },
       fail: function (res) {
         console.log(res);
+      },
+      complete: function (res) {
+        console.log(res);
+        wx.hideLoading();
       }
     });
   },

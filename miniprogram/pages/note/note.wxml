@@ -9,5 +9,9 @@
     </van-field>
 
     <van-button type="primary" size="large" bind:click="saveAndNaviback"> 保存 </van-button>
+    <block wx:if="{{nameNote}}"> 
+      <van-divider dashed />
+      <van-button  type="danger" size="large" bind:click="deleteAndNaviback"> 删除 </van-button>
+    </block>
   </view>
 </view>

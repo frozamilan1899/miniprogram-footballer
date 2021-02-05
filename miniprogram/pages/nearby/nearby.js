@@ -183,7 +183,7 @@ Page({
   checkCanIOpenDisplayActivities: function(_this) {
     for (let i = 0; i < _this.data.displayActivities.length; i++) {
       let displayActivity = _this.data.displayActivities[i];
-      if (-1 == displayActivity.referredOpeneIds.indexOf(app.globalData.openid)) {
+      if (-1 == displayActivity.referredOpenIds.indexOf(app.globalData.openid)) {
         _this.data.displayActivities[i].canOpen = false;
         _this.data.displayActivities[i].navigatePage = '';
       } else {
