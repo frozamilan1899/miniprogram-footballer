@@ -9,9 +9,11 @@ Page({
 
   data: {
     dbName: "activities",
+    avatarDbName: "avatars",
     openid: '',
     activities: [],
-    dataLoaded: false
+    dataLoaded: false,
+    avatarUrl: ''
   },
 
   onLoad: function (options) {
@@ -21,7 +23,7 @@ Page({
       withShareTicket: true
     });
 
-    if (app.globalData.openid && app.globalData.openid != '') {
+    if (app.globalData.openid != null && app.globalData.openid != '') {
       this.data.openid = app.globalData.openid;
     } else {
       var that = this;
@@ -71,10 +73,13 @@ Page({
 
   onQuery: function(_this) {
     if (0 == _this.data.openid.length) return;
+    // 加载头像
+    _this.queryAvatarUrl(_this);
+    // 加载活动
     wx.showLoading({
       title: '加载中...',
     });
-    // 如果没有指定limit，则默认且最多取20条记录
+    // 如果没有指定limit，则默认且最多取20条记录，在此规则下用户默认拿到最新的20条数据
     db.collection(_this.data.dbName).where(_.or([
       {
         _openid: _this.data.openid
@@ -120,6 +125,8 @@ Page({
           }
         }
         _this.data.dataLoaded = true;
+        // 兼容代码，去除activities中的null元素
+        _this.deleteNoneElementsInArray(_this);
         _this.setData({
           activities: _this.data.activities,
           dataLoaded: _this.data.dataLoaded
@@ -160,6 +167,69 @@ Page({
         this.deleteActivity(dataIndex, instance);
         break;
     }
+  },
+
+  onChooseAvatar: function (e) {
+    console.log(e.detail.avatarUrl)
+    this.data.avatarUrl = e.detail.avatarUrl;
+    this.setData({
+      avatarUrl: this.data.avatarUrl
+    });
+    this.saveAvatarUrl(this)
+  },
+
+  queryAvatarUrl: function(_this) {
+    if (0 == _this.data.openid.length) return;
+    _this.data.avatarUrl = app.globalData.avatarUrl;
+    db.collection(_this.data.avatarDbName).where({
+      _openid: _this.data.openid
+    }).get({
+      success: function (res) {
+        console.log(res);
+        if (res.data.length > 0) {
+          _this.data.avatarUrl = res.data[0].avatarUrl;
+          _this.setData({
+            avatarUrl: _this.data.avatarUrl
+          });
+          app.globalData.avatarUrl = _this.data.avatarUrl;
+        }
+      }
+    });
+  },
+
+  saveAvatarUrl: function(_this) {
+    db.collection(_this.data.avatarDbName).where({
+      _openid: _this.data.openid
+    }).get({
+      success: function (res) {
+        console.log(res);
+        // 存在就更新avatar url
+        if (res.data.length > 0) {
+          db.collection(_this.data.avatarDbName).where({
+            _openid: _this.data.openid
+          }).update({
+            data: {
+              avatarUrl: _this.data.avatarUrl
+            },
+            success: function (res) {
+              console.log(res);
+            }
+          });
+        }
+        // 不存在就添加avatar url
+        else {
+          db.collection(_this.data.avatarDbName).add({
+            data: {
+              avatarUrl: _this.data.avatarUrl
+            },
+            success: function (res) {
+              console.log(res); 
+            }
+          });
+        }
+        app.globalData.avatarUrl = _this.data.avatarUrl;
+      }
+    });
   },
 
   deleteActivity: function (dataIndex, instance) {
@@ -268,4 +338,22 @@ Page({
       duration: 2000
     });
   },
+
+  deleteNoneElementsInArray: function(_this) {
+    for (let i = 0; i < _this.data.activities.length; i++) {
+      var activity = _this.data.activities[i];
+      _this.removeNoneElements(activity.signUpList);
+      _this.removeNoneElements(activity.askForLeaveList);
+      _this.removeNoneElements(activity.referredOpenIds);
+      _this.data.activities[i] = activity;
+    }
+  }, 
+
+  removeNoneElements: function(array) {
+    array.forEach(function (item, index, arr) {
+      if (item == null) {
+        arr.splice(index, 1);
+      }
+    });
+  }
 })

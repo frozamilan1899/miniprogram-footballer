@@ -1,6 +1,7 @@
 const app = getApp();
 var util = require('../../common-js/util.js');
 const db = app.globalData.db;
+const _ = db.command;
 
 import Notify from '../../miniprogram_npm/@vant/weapp/notify/notify';
 import Dialog from '../../miniprogram_npm/@vant/weapp/dialog/dialog';
@@ -241,12 +242,16 @@ Page({
     // 检查报名列表的身份，将close重新设置
     for (let i = 0; i < _this.data.activityInfo.signUpList.length; i++) {
       let signUpMap = _this.data.activityInfo.signUpList[i];
-      _this.data.activityInfo.signUpList[i].close = (signUpMap.openid == app.globalData.openid);
+      if (signUpMap != null) {
+        _this.data.activityInfo.signUpList[i].close = (signUpMap.openid == app.globalData.openid);
+      }
     }
     // 检查请假列表的身份，将close重新设置
     for (let i = 0; i < _this.data.activityInfo.askForLeaveList.length; i++) {
       let askForLeaveMap = _this.data.activityInfo.askForLeaveList[i];
-      _this.data.activityInfo.askForLeaveList[i].close = (askForLeaveMap.openid == app.globalData.openid);
+      if (askForLeaveMap != null) {
+        _this.data.activityInfo.askForLeaveList[i].close = (askForLeaveMap.openid == app.globalData.openid);
+      } 
     }
   },
 
@@ -256,6 +261,7 @@ Page({
     var markers = _this.createMarkers(_this.data.activityInfo.location);
     _this.data.markers = markers;
     console.log(_this.data.activityInfo);
+    _this.deleteNoneElementsInArray(_this);
     _this.setData({
       activityInfo: _this.data.activityInfo,
       markers: _this.data.markers
@@ -388,11 +394,11 @@ Page({
       this.data.activityInfo.referredOpenIds.push(app.globalData.openid);
     }
     // 如果有报名信息添加
-    if (this.data.signUpMap.content != '') {
+    if (this.data.signUpMap != null && this.data.signUpMap.content != '') {
       this.data.activityInfo.signUpList.push(this.data.signUpMap);
     }
     // 如果有请假信息添加
-    if (this.data.askForLeaveMap.content != '') {
+    if (this.data.askForLeaveMap != null && this.data.askForLeaveMap.content != '') {
       this.data.activityInfo.askForLeaveList.push(this.data.askForLeaveMap);
     }
     this.data.activityInfo.updateTime = new Date().getTime();
@@ -400,6 +406,7 @@ Page({
     db.collection(that.data.dbName).add({
       data: that.data.activityInfo,
       success: function(res) {
+        that.deleteNoneElementsInArray(that);
         that.setData({
           activityInfo: that.data.activityInfo
         });
@@ -464,6 +471,7 @@ Page({
           _this.notify('success', successText + "成功");
         },
         complete => function() {
+          _this.deleteNoneElementsInArray(_this);
           _this.setData({
             activityInfo: _this.data.activityInfo
           });
@@ -496,6 +504,7 @@ Page({
           _this.notify('success', successText + "成功");
         },
         complete => function () {
+          _this.deleteNoneElementsInArray(_this);
           _this.setData({
             activityInfo: _this.data.activityInfo
           });
@@ -510,65 +519,56 @@ Page({
   },
 
   checkSignUpList: function() {
-    if (this.data.signUpMap.content != '') {
-      var existedInSUL = false;
+    if (this.data.signUpMap != null && this.data.signUpMap.content != '') {
       for (let index = 0; index < this.data.activityInfo.signUpList.length; index++) {
         let signUpMap = this.data.activityInfo.signUpList[index];
-        if (this.data.signUpMap.openid == signUpMap.openid &&
+        if (signUpMap != null && this.data.signUpMap.openid == signUpMap.openid &&
           this.data.signUpMap.content == signUpMap.content) {
-          existedInSUL = true;
-          break;
+            // 列表中存在此报名
+            this.notify('warning', this.data.signUpMap.content + "已报名");
+            this.resetSUMap(this);
+            return true;
         }
       }
-      if (existedInSUL) {
-        this.notify('warning', this.data.signUpMap.content + "已报名");
-        this.resetSUMap(this);
-        return true;
-      } else {
-        this.data.activityInfo.signUpList.push(this.data.signUpMap);
-        // 将请假列表中的报名人删除
-        var _this = this;
-        this.data.activityInfo.askForLeaveList.forEach(function(item, index, arr) {
-          if (item.content == _this.data.signUpMap.content &&
-            item.openid == _this.data.signUpMap.openid) {
-            arr.splice(index, 1);
-          }
-        });
-      }
+      this.data.activityInfo.signUpList.push(this.data.signUpMap);
+      // 将请假列表中的报名人删除
+      var _this = this;
+      this.data.activityInfo.askForLeaveList.forEach(function(item, index, arr) {
+        if (item != null && item.content == _this.data.signUpMap.content &&
+          item.openid == _this.data.signUpMap.openid) {
+          arr.splice(index, 1);
+        }
+      });
     }
     return false;
   },
 
   checkAskForLeaveList: function() {
-    if (this.data.askForLeaveMap.content != '') {
-      var existedInAFL = false;
+    if (this.data.askForLeaveMap != null && this.data.askForLeaveMap.content != '') {
       for (let index = 0; index < this.data.activityInfo.askForLeaveList.length; index++) {
         let askForLeaveMap = this.data.activityInfo.askForLeaveList[index];
-        if (this.data.askForLeaveMap.openid == askForLeaveMap.openid &&
+        if (askForLeaveMap != null && this.data.askForLeaveMap.openid == askForLeaveMap.openid &&
           this.data.askForLeaveMap.content == askForLeaveMap.content) {
-          existedInAFL = true;
-          break;
+            // 列表中存在此请假
+            this.notify('warning', this.data.askForLeaveMap.content + "已请假");
+            this.resetAFLMap(this);
+            return true;
         }
       }
-      if (existedInAFL) {
-        this.notify('warning', this.data.askForLeaveMap.content + "已请假");
-        this.resetAFLMap(this);
-        return true;
-      } else {
-        this.data.activityInfo.askForLeaveList.push(this.data.askForLeaveMap);
-        // 将报名列表中的请假人删除
-        var _this = this;
-        this.data.activityInfo.signUpList.forEach(function(item, index, arr) {
-          if (item.content == _this.data.askForLeaveMap.content &&
-            item.openid == _this.data.askForLeaveMap.openid) {
-            arr.splice(index, 1);
-          }
-        });
-      }
+      this.data.activityInfo.askForLeaveList.push(this.data.askForLeaveMap);
+      // 将报名列表中的请假人删除
+      var _this = this;
+      this.data.activityInfo.signUpList.forEach(function(item, index, arr) {
+        if (item != null && item.content == _this.data.askForLeaveMap.content &&
+          item.openid == _this.data.askForLeaveMap.openid) {
+          arr.splice(index, 1);
+        }
+      });
     }
     return false;
   },
 
+  // 更新自己发布的活动可以使用数据库更新方式
   updateActivityInfoViaDB: function(_this, successCallback, completeCallback) {
     console.log("db update");
     _this.data.activityInfo.updateTime = new Date().getTime();
@@ -579,16 +579,17 @@ Page({
         showTime: _this.data.activityInfo.showTime,
         duration: _this.data.activityInfo.duration,
         location: _this.data.activityInfo.location,
-        askForLeaveList: _this.data.activityInfo.askForLeaveList,
-        signUpList: _this.data.activityInfo.signUpList,
+        askForLeaveList: _.set(_this.data.activityInfo.askForLeaveList),
+        signUpList: _.set(_this.data.activityInfo.signUpList),
         updateTime: _this.data.activityInfo.updateTime,
-        referredOpenIds: _this.data.activityInfo.referredOpenIds
+        referredOpenIds: _.set(_this.data.activityInfo.referredOpenIds)
       },
       success: successCallback(),
       complete: completeCallback()
     });
   },
 
+  // 更新别人发布的活动只能使用云函数更新方式
   updateActivityInfoViaCloud: function(_this, successCallback, completeCallback) {
     // 调用云函数更新
     console.log("cloud update");
@@ -676,6 +677,7 @@ Page({
             that.notify('success', tagDeleteTip + "成功");
           },
           complete => function (res) {
+            that.deleteNoneElementsInArray(that);
             that.setData({
               activityInfo: that.data.activityInfo
             });
@@ -693,6 +695,7 @@ Page({
             that.notify('success', tagDeleteTip + "成功");
           },
           complete => function () {
+            that.deleteNoneElementsInArray(that);
             that.setData({
               activityInfo: that.data.activityInfo
             });
@@ -706,6 +709,22 @@ Page({
       }
     }).catch(() => {
       // on cancel
+    });
+  },
+
+  deleteNoneElementsInArray: function(_this) {
+    var activity = _this.data.activityInfo;
+    _this.removeNoneElements(activity.signUpList);
+    _this.removeNoneElements(activity.askForLeaveList);
+    _this.removeNoneElements(activity.referredOpenIds);
+    _this.data.activityInfo = activity;
+  }, 
+
+  removeNoneElements: function(array) {
+    array.forEach(function (item, index, arr) {
+      if (item == null) {
+        arr.splice(index, 1);
+      }
     });
   },
 
@@ -767,6 +786,7 @@ Page({
         that.data.activityInfo = activityInfo;
         var markers = that.createMarkers(that.data.activityInfo.location);
         that.data.markers = markers;
+        that.deleteNoneElementsInArray(that);
         that.setData({
           activityInfo: activityInfo,
           markers: that.data.markers
@@ -794,6 +814,7 @@ Page({
     _this.data.activityInfo = activityInfo;
     var markers = _this.createMarkers(_this.data.activityInfo.location);
     _this.data.markers = markers;
+    _this.deleteNoneElementsInArray(_this);
     _this.setData({
       activityInfo: activityInfo,
       markers: _this.data.markers
@@ -848,6 +869,7 @@ Page({
     } = event;
     this.data.activityInfo.time = detail;
     this.data.activityInfo.showTime = util.formatDate(new Date(detail), "yyyy-MM-dd hh:mm");
+    this.deleteNoneElementsInArray(this);
     this.setData({
       activityInfo: this.data.activityInfo
     });
@@ -876,6 +898,7 @@ Page({
       currentTarget
     } = event;
     this.data.activityInfo.duration = detail.value;
+    this.deleteNoneElementsInArray(this);
     this.setData({
       activityInfo: this.data.activityInfo
     });

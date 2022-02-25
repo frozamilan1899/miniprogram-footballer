@@ -4,10 +4,9 @@
     <van-dialog id="van-dialog" />
 
     <view class="userInfo">
-      <view class="userAvatar">
-        <open-data type="userAvatarUrl"></open-data>
-      </view>
-      <open-data type="userNickName"></open-data>
+      <button class="userAvatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+          <image class="userAvatar" src="{{avatarUrl}}"></image>
+      </button>
     </view>
 
     <van-button type="primary" size="large" bind:click="toEditPage"> 新活动 </van-button>

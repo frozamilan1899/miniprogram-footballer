@@ -1,23 +1,22 @@
+const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
+
 App({
 
   globalData: {
     db: new Object(),
     openid: "",
-    sceneId: "",
     previousActivitiesInfoKey: "previousActivitiesInfo",
-    previousMatchesInfoKey: "previousMatchesInfo",
-    newsInfoKey: "newsInfo",
     sharePicUrlKey: "sharePicUrl",
     sceneIdList: [1007, 1008, 1014, 1017, 1037, 1044, 1096],
     shared: false,
     needAuthMsg: false,
+    avatarUrl: ''
   },
 
   onLaunch: function (options) {
     let option = JSON.stringify(options);
     console.log('app onLaunch option-----' + option);
-    this.globalData.sceneId = options.scene;
-    this.onJudgeEntryScene(this.globalData.sceneId);
+    this.onJudgeEntryScene(option.scene);
 
     if (!wx.cloud) {
       console.error('请使用 2.2.3 或以上的基础库以使用云能力');
@@ -36,6 +35,8 @@ App({
       
       // 初始化云数据库对象
       this.globalData.db = wx.cloud.database();
+      // 初始化默认头像url
+      this.globalData.avatarUrl = defaultAvatarUrl;
 
       // 调用云函数获取openid
       wx.cloud.callFunction({
@@ -55,9 +56,8 @@ App({
   onShow: function (options) {
     let option = JSON.stringify(options);
     console.log('app onShow option-----' + option);
-    this.globalData.sceneId = options.scene;
-    this.onJudgeEntryScene(this.globalData.sceneId);
-    this.checkIfNeedAuthMsg();
+    this.onJudgeEntryScene(option.scene);
+    this.checkIfNeedAuthMsg(option.scene);
   },
 
   onJudgeEntryScene: function(sceneId) {
@@ -69,9 +69,9 @@ App({
     }
   },
 
-  checkIfNeedAuthMsg: function() {
+  checkIfNeedAuthMsg: function(sceneId) {
     console.log('check if need auth message');
-    if (this.globalData.sceneId == '1014') {
+    if (sceneId == '1014') {
       console.log('yes, auth');
       this.globalData.needAuthMsg = true;
     } else {

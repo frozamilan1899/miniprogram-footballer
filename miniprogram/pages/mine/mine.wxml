@@ -1,11 +1,9 @@
 <view class="container">
   <view class="page-body">
     <view class="userInfo">
-      <view class="userAvatar">
-        <open-data type="userAvatarUrl"></open-data>
-      </view>
+      <image class="userAvatar" src="{{avatarUrl}}"></image>
       <view class="userNickName">
-        <open-data type="userNickName"></open-data>
+        <view> {{nameNote}} </view>
       </view>
     </view>
 

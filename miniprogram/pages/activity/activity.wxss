@@ -17,15 +17,21 @@
 }
 
 .userAvatar {
-  overflow:hidden;  
-  display: block;  
+  width: 160rpx;  
+  height: 160rpx;
+  border-radius: 50%; 
+}
+
+.userAvatar-wrapper {
+  overflow:hidden; 
+  display: block;   
   width: 160rpx;  
   height: 160rpx;  
-  margin: 20rpx;  
-  margin-top: 50rpx;  
-  border-radius: 50%;  
+  margin-top: 70rpx;  
+  padding: 0rpx; 
+  border-radius: 50%; 
   border: 2px solid #fff;  
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);  
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2); 
 }
 
 .skeleton {

@@ -85,7 +85,14 @@ Page({
       },
       success: function (res) {
         console.log(res);
-        if ('editActivity' === that.data.previousPage) {
+        if ('editActivity' == that.data.previousPage) {
+          let pages = getCurrentPages();
+          if (pages.length >= 2) {
+            let prevPage = pages[pages.length - 2];
+            prevPage.data.nameNote = that.data.nameNote;
+          }
+        }
+        if ('mine' == that.data.previousPage) {
           let pages = getCurrentPages();
           if (pages.length >= 2) {
             let prevPage = pages[pages.length - 2];
@@ -118,11 +125,11 @@ Page({
       success: function (res) {
         console.log(res);
         that.data.nameNote = '';
-        if ('editActivity' === that.data.previousPage) {
+        if ('mine' == that.data.previousPage) {
           let pages = getCurrentPages();
           if (pages.length >= 2) {
             let prevPage = pages[pages.length - 2];
-            prevPage.data.nameNote = that.data.nameNote;
+            prevPage.data.nameNote = '我的备注';
           }
         }
       },

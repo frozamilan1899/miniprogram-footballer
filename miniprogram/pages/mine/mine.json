@@ -6,5 +6,6 @@
     "van-cell-group": "@vant/weapp/cell-group/index",
     "van-notify": "@vant/weapp/notify/index",
     "van-divider": "@vant/weapp/divider/index"
-  }
+  },
+  "enablePullDownRefresh": true
 }
