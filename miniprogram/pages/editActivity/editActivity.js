@@ -201,12 +201,18 @@ Page({
   queryDataFromCache: function() {
     // 从缓存中获取指定id的活动信息
     var cachedActivities = wx.getStorageSync(app.globalData.previousActivitiesInfoKey);
+    var found = false;
     for (let i = 0; i < cachedActivities.length; i++) {
       let cachedActivity = cachedActivities[i];
       if (this.data.activityId == cachedActivity._id) {
         this.data.activityInfo = cachedActivity;
+        found = true;
         break;
       }
+    }
+    if (!found) {
+      // 如果从缓存中未能找到对应的活动，那么从云上查询
+      this.queryDataFromCloud();
     }
     this.checkActivityExpired(this);
     this.adjustUIItems(this);

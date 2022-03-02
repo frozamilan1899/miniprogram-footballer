@@ -7,16 +7,15 @@ App({
     openid: "",
     previousActivitiesInfoKey: "previousActivitiesInfo",
     sharePicUrlKey: "sharePicUrl",
-    sceneIdList: [1007, 1008, 1014, 1017, 1037, 1044, 1096],
+    sceneIdList: [1007, 1008, 1014, 1017, 1036, 1044, 1096, 1107, 1158, 1160],
     shared: false,
     needAuthMsg: false,
     avatarUrl: ''
   },
 
   onLaunch: function (options) {
-    let option = JSON.stringify(options);
-    console.log('app onLaunch option-----' + option);
-    this.onJudgeEntryScene(option.scene);
+    console.log('app onLaunch option-----' + JSON.stringify(options));
+    this.onJudgeEntryScene(options.scene);
 
     if (!wx.cloud) {
       console.error('请使用 2.2.3 或以上的基础库以使用云能力');
@@ -54,10 +53,9 @@ App({
   },
 
   onShow: function (options) {
-    let option = JSON.stringify(options);
-    console.log('app onShow option-----' + option);
-    this.onJudgeEntryScene(option.scene);
-    this.checkIfNeedAuthMsg(option.scene);
+    console.log('app onLaunch option-----' + JSON.stringify(options));
+    this.onJudgeEntryScene(options.scene);
+    this.checkIfNeedAuthMsg(options.scene);
   },
 
   onJudgeEntryScene: function(sceneId) {
@@ -71,7 +69,7 @@ App({
 
   checkIfNeedAuthMsg: function(sceneId) {
     console.log('check if need auth message');
-    if (sceneId == '1014') {
+    if (sceneId == '1014' || sceneId == '1107') {
       console.log('yes, auth');
       this.globalData.needAuthMsg = true;
     } else {
